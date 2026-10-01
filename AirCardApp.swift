@@ -2098,11 +2098,69 @@ struct WalletCardView: View {
     }
 }
 
+// MARK: - Crypto Donation Row (macOS)
+
+struct CryptoDonationRowMac: View {
+    let title: String
+    let address: String
+    let icon: String
+    let iconColor: Color
+
+    @State private var isCopied = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(iconColor)
+                    .font(.system(size: 13, weight: .bold))
+                Text(title)
+                    .font(.system(size: 12, weight: .semibold))
+                Spacer()
+                Button(action: {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(address, forType: .string)
+                    NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .default)
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        isCopied = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        withAnimation {
+                            isCopied = false
+                        }
+                    }
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
+                        Text(isCopied ? "Copied!" : "Copy")
+                    }
+                    .font(.system(size: 10, weight: .bold))
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .tint(isCopied ? .green : .blue)
+            }
+
+            Text(address)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+                .textSelection(.enabled)
+        }
+        .padding(10)
+        .background(Color(NSColor.controlBackgroundColor))
+        .cornerRadius(8)
+    }
+}
+
 // MARK: - Main UI View
 
 struct ContentView: View {
     @StateObject private var vm = AppViewModel()
+    @AppStorage("aircard.dont_show_support_on_launch") private var dontShowSupportOnLaunch: Bool = false
+    @State private var showSupportPopup = false
     @State private var showCredits = false
+    @State private var creditsSelectedTab = 0
     @State private var dragOffsetStart: CGPoint = .zero
     @State private var dragKeyStartOffsets: [String: CGPoint] = [:]
     @State private var isTargetedPoster = false
@@ -2224,11 +2282,18 @@ struct ContentView: View {
                 Text("Skins successfully applied to all selected cards!\n\nPlease force-close the Wallet app on your iPhone (or reboot) to see your new designs.")
             }
         }
-        .sheet(isPresented: $showCredits) {
-            creditsSheet
+        .sheet(isPresented: $showSupportPopup) {
+            supportPopupSheet
         }
         .sheet(isPresented: $vm.showAddCardSheet) {
             addCardSheet
+        }
+        .onAppear {
+            if !dontShowSupportOnLaunch {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    showSupportPopup = true
+                }
+            }
         }
         .onChange(of: vm.selectedTab) { _, newTab in
             if newTab == .passcodeThemes && vm.isScanningCards {
@@ -2373,11 +2438,14 @@ struct ContentView: View {
             .cornerRadius(16)
             
             Button(action: { showCredits = true }) {
-                Label("Credits", systemImage: "heart.fill")
+                Label("Credits & Donate", systemImage: "heart.fill")
                     .foregroundColor(.pink)
             }
             .buttonStyle(.bordered)
             .controlSize(.regular)
+            .sheet(isPresented: $showCredits) {
+                creditsSheet
+            }
         }
         .controlSize(.regular)
         .frame(height: 54)
@@ -3746,66 +3814,266 @@ struct ContentView: View {
     
     // MARK: - Sheets & Pickers
     
-    private var creditsSheet: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "creditcard.circle.fill")
-                .font(.system(size: 44))
-                .foregroundColor(.accentColor)
-            
-            Text("AirCard")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            Text("Apple Wallet Skins & Passcode Themes for iOS 18+")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Divider()
-            
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "person.crop.circle.fill")
+    @ViewBuilder
+    private var macDonateContentView: some View {
+        VStack(spacing: 12) {
+            // Creator Card
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    Image(systemName: "heart.circle.fill")
+                        .font(.system(size: 34))
+                        .foregroundColor(.pink)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
+                            Text("Maksym Reva")
+                                .font(.system(size: 14, weight: .bold))
+                            Text("🇺🇦")
+                                .font(.system(size: 13))
+                        }
+                        Text("@mak5er • Lead Developer")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+
+                // Social Links
+                HStack(spacing: 8) {
+                    Link(destination: URL(string: "https://x.com/mak5er")!) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "bubble.left.and.bubble.right.fill")
+                            Text("Twitter / X")
+                        }
+                        .font(.system(size: 11, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(Color.blue.opacity(0.12))
                         .foregroundColor(.blue)
-                    Text("Developer:")
-                        .fontWeight(.medium)
-                    Link("@mak5er", destination: URL(string: "https://github.com/mak5er")!)
-                    Text("·")
-                        .foregroundColor(.secondary)
-                    Link("Twitter / X", destination: URL(string: "https://x.com/mak5er")!)
-                }
-                
-                HStack {
-                    Image(systemName: "person.crop.circle.fill")
-                        .foregroundColor(.blue)
-                    Text("Developer:")
-                        .fontWeight(.medium)
-                    Link("@Lumid-Off", destination: URL(string: "https://github.com/Lumid-Off")!)
-                    Text("·")
-                        .foregroundColor(.secondary)
-                    Link("Twitter / X", destination: URL(string: "https://x.com/LumidOff")!)
-                }
-                
-                HStack {
-                    Image(systemName: "bolt.shield.fill")
-                        .foregroundColor(.orange)
-                    Text("Core Exploit:")
-                        .fontWeight(.medium)
-                    Text("airlift (AirTraffic sync escape)")
-                        .foregroundColor(.secondary)
-                }
-                
-                HStack {
-                    Image(systemName: "lock.shield.fill")
-                        .foregroundColor(.purple)
-                    Text("Passcode Themes:")
-                        .fontWeight(.medium)
-                    Text(".passthm standard (Cowabunga / Nugget)")
-                        .foregroundColor(.secondary)
+                        .cornerRadius(6)
+                    }
+
+                    Link(destination: URL(string: "https://github.com/mak5er")!) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "link")
+                            Text("GitHub")
+                        }
+                        .font(.system(size: 11, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(Color.primary.opacity(0.08))
+                        .foregroundColor(.primary)
+                        .cornerRadius(6)
+                    }
                 }
             }
-            .font(.subheadline)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 8)
+            .padding(12)
+            .background(Color(NSColor.controlBackgroundColor))
+            .cornerRadius(10)
+
+            // Payment Methods
+            VStack(alignment: .leading, spacing: 8) {
+                Text("DONATE & SUPPORT")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 2)
+
+                // PayPal Button
+                Link(destination: URL(string: "https://www.paypal.com/donate/?hosted_button_id=98QRTC2HFRA4Y")!) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "creditcard.fill")
+                            .font(.system(size: 14))
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Donate with PayPal")
+                                .font(.system(size: 12, weight: .bold))
+                            Text("Recipient: Maksym Reva")
+                                .font(.system(size: 10))
+                                .opacity(0.85)
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.system(size: 12))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .foregroundColor(.white)
+                    .background(Color.blue)
+                    .cornerRadius(8)
+                }
+
+                // TON
+                CryptoDonationRowMac(
+                    title: "💎 TON (The Open Network)",
+                    address: "UQBm9KPhtMw-XVVjirUoa09wzrlyWsbeZhKfefl1Uw-qNZ-r",
+                    icon: "diamond.fill",
+                    iconColor: .cyan
+                )
+
+                // USDT TRC20
+                CryptoDonationRowMac(
+                    title: "💵 USDT (TRC20)",
+                    address: "TDkDMCyjYxgvkWUnQiF5Erk2RyPQMT6G1n",
+                    icon: "dollarsign.circle.fill",
+                    iconColor: .green
+                )
+
+                // BEP20
+                CryptoDonationRowMac(
+                    title: "🪙 BEP20 (BNB / USDT)",
+                    address: "0x0954dc491c502849d04956ef74634aa5931a08e8",
+                    icon: "bitcoinsign.circle.fill",
+                    iconColor: .orange
+                )
+            }
+
+            Text("Thank you for supporting AirCard development! ❤️")
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    private var supportPopupSheet: some View {
+        VStack(spacing: 14) {
+            // Header
+            VStack(spacing: 4) {
+                Image(systemName: "heart.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundColor(.pink)
+
+                Text("Welcome to AirCard!")
+                    .font(.title2)
+                    .fontWeight(.bold)
+
+                Text("Free & Open Source • Developed by @mak5er")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Divider()
+
+            macDonateContentView
+
+            Divider()
+
+            VStack(spacing: 8) {
+                Button("Continue to AirCard") {
+                    showSupportPopup = false
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+                .frame(maxWidth: .infinity)
+
+                Toggle("Don't show this popup on startup", isOn: $dontShowSupportOnLaunch)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Text("You can reopen donation options anytime in Credits & Donate ❤️")
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(20)
+        .frame(width: 440)
+    }
+
+    private var creditsSheet: some View {
+        VStack(spacing: 14) {
+            Picker("Category", selection: $creditsSelectedTab) {
+                Text("Credits").tag(0)
+                Text("Donate ❤️").tag(1)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 4)
+
+            Divider()
+
+            if creditsSelectedTab == 0 {
+                VStack(spacing: 16) {
+                    Image(systemName: "creditcard.circle.fill")
+                        .font(.system(size: 40))
+                        .foregroundColor(.accentColor)
+                    
+                    Text("AirCard")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text("Apple Wallet Skins & Passcode Themes for iOS 18+")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    // Button to Donate
+                    Button(action: {
+                        withAnimation {
+                            creditsSelectedTab = 1
+                        }
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(.pink)
+                            Text("Support @mak5er (Donate ❤️)")
+                                .fontWeight(.semibold)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(8)
+                        .background(Color.pink.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    .buttonStyle(.plain)
+
+                    Divider()
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Image(systemName: "person.crop.circle.fill")
+                                .foregroundColor(.blue)
+                            Text("Developer:")
+                                .fontWeight(.medium)
+                            Link("@mak5er", destination: URL(string: "https://github.com/mak5er")!)
+                            Text("·")
+                                .foregroundColor(.secondary)
+                            Link("Twitter / X", destination: URL(string: "https://x.com/mak5er")!)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "person.crop.circle.fill")
+                                .foregroundColor(.blue)
+                            Text("Developer:")
+                                .fontWeight(.medium)
+                            Link("@Lumid-Off", destination: URL(string: "https://github.com/Lumid-Off")!)
+                            Text("·")
+                                .foregroundColor(.secondary)
+                            Link("Twitter / X", destination: URL(string: "https://x.com/LumidOff")!)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "bolt.shield.fill")
+                                .foregroundColor(.orange)
+                            Text("Core Exploit:")
+                                .fontWeight(.medium)
+                            Text("airlift (AirTraffic sync escape)")
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "lock.shield.fill")
+                                .foregroundColor(.purple)
+                            Text("Passcode Themes:")
+                                .fontWeight(.medium)
+                            Text(".passthm standard (Cowabunga / Nugget)")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 8)
+                }
+            } else {
+                macDonateContentView
+            }
             
             Divider()
             
@@ -3815,8 +4083,8 @@ struct ContentView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.regular)
         }
-        .padding(24)
-        .frame(width: 420)
+        .padding(20)
+        .frame(width: 440)
     }
     
     private var addCardSheet: some View {
