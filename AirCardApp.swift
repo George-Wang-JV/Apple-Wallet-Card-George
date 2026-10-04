@@ -912,14 +912,15 @@ class AppViewModel: ObservableObject {
         for comp in components {
             let clean = comp.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "."))
             if clean.count >= 16 && clean.count <= 64 && !cards.contains(where: { $0.id == clean }) {
-                cards.append(CardItem(id: clean, isSelected: true, displayName: walletCatalog.name(for: clean)))
+                cards.append(CardItem(id: clean, isSelected: true, displayName: walletCatalog.name(for: clean), confirmed: true))
+                currentPreloadedIDs.insert(clean)
                 addedCount += 1
                 log("Added card: \(clean)")
             }
         }
         if addedCount > 0 {
             saveCards()
-            scannerMessage = "Saved \(addedCount) ID(s) for matching. They stay hidden until this iPhone exposes them in a scan."
+            scannerMessage = "Added \(addedCount) card ID(s) ready for skinning and flashing."
         }
     }
     
@@ -1018,12 +1019,14 @@ class AppViewModel: ObservableObject {
             }
 
             let pipe = Pipe()
+            let errPipe = Pipe()
             process.standardOutput = pipe
-            process.standardError = FileHandle.nullDevice
+            process.standardError = errPipe
 
             do {
                 try process.run()
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
                 process.waitUntilExit()
 
                 if let resp = try? JSONDecoder().decode(DeviceResponse.self, from: data) {
@@ -1096,19 +1099,36 @@ class AppViewModel: ObservableObject {
                     }
                 } else {
                     // Nothing parseable came back, which means the backend did not
-                    // run, not that the cable is loose. Saying "no iPhone" here
-                    // sends people to replug a phone that was never the problem.
+                    // run, not that the cable is loose.
                     let raw = String(data: data, encoding: .utf8) ?? ""
+                    let errRaw = (String(data: errData, encoding: .utf8) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                    let errLower = errRaw.lowercased()
+                    let isLicenseOrCLT = errLower.contains("license") ||
+                                         errLower.contains("xcode-select") ||
+                                         errLower.contains("commandlinetools") ||
+                                         errLower.contains("xcrun")
+
                     await MainActor.run {
                         self.devices = []
                         self.device = nil
                         self.activateCardDevice(nil)
                         self.refreshWalletCatalog()
                         self.isCheckingDevice = false
-                        self.statusText = "Device detection could not run. See the log."
-                        self.errorMessage = "AirCard could not run its device tools. The app may be damaged or incompletely installed."
-                        self.scannerMessage = "Device check failed. Reconnect and unlock the iPhone, then retry."
-                        self.log("Device detection returned nothing usable: \(raw.isEmpty ? "(no output)" : raw.prefix(400).description)")
+                        if isLicenseOrCLT {
+                            self.statusText = "Command Line Tools required."
+                            self.errorMessage = "AirCard needs Xcode Command Line Tools to communicate with devices.\n\nPlease open Terminal and run:\nxcode-select --install\n\nor open Xcode to accept the license agreement, then restart AirCard."
+                            self.scannerMessage = "Developer tools or license agreement required. See log."
+                        } else {
+                            self.statusText = "Device detection could not run. See the log."
+                            self.errorMessage = errRaw.isEmpty
+                                ? "AirCard could not run its device tools. Check the Activity Console log for details."
+                                : "Device tool error: \(errRaw.prefix(300))"
+                            self.scannerMessage = "Device check failed. Reconnect and unlock the iPhone, then retry."
+                        }
+                        if !errRaw.isEmpty {
+                            self.log("Backend stderr: \(errRaw)")
+                        }
+                        self.log("Device detection returned nothing usable: \(raw.isEmpty ? "(no stdout)" : raw.prefix(400).description)")
                     }
                 }
             } catch {
@@ -1120,6 +1140,7 @@ class AppViewModel: ObservableObject {
                     self.isCheckingDevice = false
                     self.scannerMessage = "Device check failed. Reconnect and unlock the iPhone, then retry."
                     self.statusText = "Device detection failed: \(error.localizedDescription)"
+                    self.log("Process execution failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -1279,7 +1300,11 @@ class AppViewModel: ObservableObject {
                             }
                         }
                         
-                        for candidate in WalletScanParser.cardIDs(in: line) {
+                        var candidates = WalletScanParser.cardIDs(in: line)
+                        if candidates.isEmpty {
+                            candidates = WalletScanParser.fallbackCardIDs(in: line)
+                        }
+                        for candidate in candidates {
                             await MainActor.run {
                                 guard self.scanProcess === proc else { return }
                                 self.recordPreloadedCard(candidate)
@@ -1345,14 +1370,13 @@ class AppViewModel: ObservableObject {
             errorMessage = "No iPhone connected."
             return
         }
-        let verifiedIDs = currentVerifiedCardIDs
-        let allSkinned = cards.filter { verifiedIDs.contains($0.id) && $0.isSelected && $0.customImageURL != nil }
+        let allSkinned = cards.filter { $0.isSelected && $0.customImageURL != nil }
         guard !allSkinned.isEmpty else {
             errorMessage = "Please assign a skin image to at least one selected card."
             return
         }
         // Only flash changed skins; if nothing changed, re-flash everything selected.
-        let changed = cardsNeedingFlash.filter { verifiedIDs.contains($0.id) }
+        let changed = cardsNeedingFlash
         let selectedCardsWithSkin = changed.isEmpty ? allSkinned : changed
         
         isFlashing = true
@@ -1852,6 +1876,7 @@ struct WalletCardView: View {
     @Binding var card: CardItem
     let cardIndex: Int
     var isFlashed: Bool = false
+    var isVerified: Bool = true
     let onPickImage: () -> Void
     let onClearImage: () -> Void
     let onDelete: () -> Void
@@ -2022,9 +2047,19 @@ struct WalletCardView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .lineLimit(2)
                     .help(card.displayName ?? "No matching name in the Mac cache. The card ID is preserved.")
-                Text("Matched to this iPhone in the current scan")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                if isVerified {
+                    Text("Matched to this iPhone in current scan")
+                        .font(.caption2)
+                        .foregroundStyle(.green)
+                } else if card.confirmed {
+                    Text("Saved on this iPhone")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Manually added · Ready to flash")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
                 if card.customImageURL != nil && card.customImage == nil {
                     Text("Skin file unavailable. Choose the image again.")
                         .font(.caption2).foregroundStyle(.orange)
@@ -2167,7 +2202,7 @@ struct ContentView: View {
     @State private var isTargetedTheme = false
     
     private var readyToFlashCount: Int {
-        vm.currentVerifiedCards.filter { $0.isSelected && $0.customImageURL != nil }.count
+        vm.cards.filter { $0.isSelected && $0.customImageURL != nil }.count
     }
     
     private var changedCount: Int { vm.cardsNeedingFlash.count }
@@ -2211,7 +2246,7 @@ struct ContentView: View {
             // 4. Main Workspace
             if vm.selectedTab == .walletCards {
                 ScrollView {
-                    if vm.currentVerifiedCards.isEmpty {
+                    if vm.cards.isEmpty {
                         emptyStateView
                             .padding(.top, 40)
                     } else {
@@ -2219,13 +2254,14 @@ struct ContentView: View {
                             columns: [GridItem(.adaptive(minimum: 310, maximum: 360), spacing: 20)],
                             spacing: 20
                         ) {
-                            ForEach(Array(vm.currentVerifiedCards.enumerated()), id: \.element.id) { visibleIndex, verifiedCard in
-                                let cardID = verifiedCard.id
+                            ForEach(Array(vm.cards.enumerated()), id: \.element.id) { visibleIndex, cardItem in
+                                let cardID = cardItem.id
                                 let deviceID = vm.device?.udid
                                 WalletCardView(
-                                    card: walletCardBinding(in: $vm.cards, snapshot: verifiedCard),
+                                    card: walletCardBinding(in: $vm.cards, snapshot: cardItem),
                                     cardIndex: visibleIndex,
-                                    isFlashed: vm.isSkinFlashed(verifiedCard),
+                                    isFlashed: vm.isSkinFlashed(cardItem),
+                                    isVerified: vm.currentVerifiedCardIDs.contains(cardID),
                                     onPickImage: { openCardImagePicker(for: cardID) },
                                     onClearImage: { vm.clearCardImage(for: cardID) },
                                     onDelete: { vm.deleteCard(id: cardID) },
@@ -2279,7 +2315,7 @@ struct ContentView: View {
             if vm.selectedTab == .passcodeThemes {
                 Text("Passcode theme successfully applied!\n\nLock your iPhone (or restart) to see your new passcode keypad.")
             } else {
-                Text("Skins successfully applied to all selected cards!\n\nPlease force-close the Wallet app on your iPhone (or reboot) to see your new designs.")
+                Text("Skins successfully applied to all selected cards!\n\nPlease force-close the Wallet app on your iPhone (or reboot) to see your new designs.\n\nNote: Apple Card renders dynamically and its face color reflects your spending categories rather than static cached skins.")
             }
         }
         .sheet(isPresented: $showSupportPopup) {
@@ -2318,7 +2354,7 @@ struct ContentView: View {
                     Text("AirCard")
                         .font(.title2)
                         .fontWeight(.bold)
-                    Text("v1.2.5")
+                    Text("v1.2.6")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -2479,7 +2515,7 @@ struct ContentView: View {
             .buttonStyle(.bordered)
             .controlSize(.regular)
             
-            if !vm.currentVerifiedCards.isEmpty {
+            if !vm.cards.isEmpty {
                 Button(action: openBulkImagePicker) {
                     Label("Set Skin for All...", systemImage: "photo.on.rectangle.angled")
                 }
@@ -2490,11 +2526,10 @@ struct ContentView: View {
             
             Spacer()
             
-            if !vm.currentVerifiedCards.isEmpty {
+            if !vm.cards.isEmpty {
                 HStack(spacing: 8) {
                     Button("Select All") {
-                        let verifiedIDs = vm.currentVerifiedCardIDs
-                        for idx in vm.cards.indices where verifiedIDs.contains(vm.cards[idx].id) {
+                        for idx in vm.cards.indices {
                             vm.cards[idx].isSelected = true
                         }
                     }
@@ -2504,8 +2539,7 @@ struct ContentView: View {
                     Text("·").foregroundColor(.secondary)
                     
                     Button("Deselect All") {
-                        let verifiedIDs = vm.currentVerifiedCardIDs
-                        for idx in vm.cards.indices where verifiedIDs.contains(vm.cards[idx].id) {
+                        for idx in vm.cards.indices {
                             vm.cards[idx].isSelected = false
                         }
                     }
@@ -3704,8 +3738,9 @@ struct ContentView: View {
                                 .font(.system(size: 10))
                                 .foregroundColor(.secondary)
                         }
-                    } else if !vm.currentVerifiedCards.isEmpty {
-                        Text("\(vm.currentVerifiedCards.filter { $0.isSelected }.count) of \(vm.currentVerifiedCards.count) verified cards selected · \(changedCount) changed · \(readyToFlashCount - changedCount) already on iPhone")
+                    } else if !vm.cards.isEmpty {
+                        let selectedCount = vm.cards.filter { $0.isSelected }.count
+                        Text("\(selectedCount) of \(vm.cards.count) cards selected · \(changedCount) changed · \(readyToFlashCount - changedCount) already on iPhone")
                             .font(.system(size: 10))
                             .foregroundColor(.secondary)
                     }
@@ -4143,7 +4178,7 @@ struct ContentView: View {
         panel.canChooseDirectories = false
         panel.message = "Choose a skin to assign to all selected cards..."
         if panel.runModal() == .OK, let url = panel.url {
-            for card in vm.currentVerifiedCards where card.isSelected {
+            for card in vm.cards where card.isSelected {
                 vm.setCardImage(for: card.id, url: url)
             }
         }
