@@ -43,6 +43,7 @@ struct WalletSavedCard: Codable, Equatable {
     var confirmed: Bool = false
     var imagePath: String? = nil
     var selected: Bool = true
+    var displayName: String? = nil
 
     static func unique(_ entries: [WalletSavedCard]) -> [WalletSavedCard] {
         var result: [WalletSavedCard] = []
@@ -51,6 +52,7 @@ struct WalletSavedCard: Codable, Equatable {
             if let index = indices[entry.id] {
                 result[index].confirmed = result[index].confirmed || entry.confirmed
                 if result[index].imagePath == nil { result[index].imagePath = entry.imagePath }
+                if result[index].displayName == nil { result[index].displayName = entry.displayName }
             } else {
                 indices[entry.id] = result.count
                 result.append(entry)

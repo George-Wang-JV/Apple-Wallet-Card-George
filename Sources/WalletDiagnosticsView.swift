@@ -17,7 +17,10 @@ struct WalletDiagnosticsView: View {
         if matched > 0 {
             return hidden > 0 ? "\(matched) card(s) verified · \(hidden) hidden" : "\(matched) card(s) verified"
         }
-        return "No cards detected. Tap 'Scan Cards' to begin."
+        if !vm.cards.isEmpty, vm.skinHistoryDeviceID != nil {
+            return "\(vm.cards.count) saved card(s) restored for this iPhone · Scan Cards to verify"
+        }
+        return "No cards detected. Scan Cards to detect and save automatically."
     }
 
     var body: some View {

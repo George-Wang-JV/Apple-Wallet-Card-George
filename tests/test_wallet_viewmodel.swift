@@ -20,7 +20,11 @@ struct WalletViewModelTests {
         precondition(vm.cards.map(\.id) == [b, a])
         precondition(vm.currentVerifiedCards.isEmpty) // Saved records stay hidden until this scan sees them.
         precondition(vm.confirmedCardIDs.isEmpty) // Legacy IDs have no device provenance.
+        vm.recordScannedCard(c)
+        vm.recordPreloadedCard(c)
+        precondition(vm.currentVerifiedCardIDs.isEmpty) // No verified IDs without a device.
         vm.activateCardDevice("first-phone")
+        precondition(vm.cards.isEmpty) // Global legacy candidates must not leak into a new iPhone.
         vm.isScanningCards = true
         vm.walletCatalog = WalletCatalog(paymentStatus: "matched", payments: [
             .init(id: a, name: "Active A", source: "payment"),
@@ -33,6 +37,19 @@ struct WalletViewModelTests {
         precondition(vm.currentScanIDs == [a] && vm.confirmedCardIDs == [a, b])
         precondition(vm.currentVerifiedCardIDs == [a, b])
         precondition(vm.cards.count == 2)
+        // Restore immediately while the original scanner is still running: no
+        // manual Save IDs, scan-stop, disconnect or device-switch is needed.
+        let immediate = AppViewModel(cardDefaults: defaults, connectOnLaunch: false, skinLibrary: library)
+        immediate.activateCardDevice("first-phone")
+        precondition(immediate.cards.map(\.id) == [a, b])
+        precondition(immediate.cards.map(\.displayName) == ["Active A", "Active B"])
+        precondition(immediate.confirmedCardIDs == [a, b])
+        precondition(immediate.currentVerifiedCardIDs.isEmpty) // Restored != verified in this scan.
+        immediate.activateCardDevice("fresh-phone")
+        precondition(immediate.cards.isEmpty)
+        immediate.activateCardDevice("first-phone")
+        precondition(immediate.cards.count == 2)
+        precondition(immediate.scannerMessage.contains("Restored 2"))
         vm.isScanningCards = false
         let activation = "A00000000310100100000020"
         precondition(!vm.recordActivatedPaymentCard(activation))
@@ -47,7 +64,7 @@ struct WalletViewModelTests {
         precondition(vm.cards.allSatisfy { $0.customImageURL == nil })
         vm.recordScannedCard(b)
         vm.activateCardDevice("first-phone")
-        precondition(vm.cards.map(\.id) == [a, b])
+        precondition(vm.cards.map(\.id) == [b, a])
         precondition(vm.confirmedCardIDs == [a, b])
         precondition(vm.cards[0].customImageURL?.path == "/skin-a.png")
         precondition(vm.cards[1].customImageURL?.path == "/skin-b.png")
@@ -67,6 +84,17 @@ struct WalletViewModelTests {
         precondition(relaunched.cards.count == countBeforePreload + 1)
         precondition(relaunched.cards.first(where: { $0.id == c })?.confirmed == true)
         precondition(relaunched.currentVerifiedCards.map(\.id) == [c])
+        let verifiedRestore = AppViewModel(cardDefaults: defaults, connectOnLaunch: false, skinLibrary: library)
+        verifiedRestore.activateCardDevice("second-phone")
+        precondition(verifiedRestore.confirmedCardIDs == [b, c])
+        verifiedRestore.activateCardDevice(nil)
+        precondition(verifiedRestore.confirmedCardIDs.isEmpty)
+        verifiedRestore.activateCardDevice("second-phone")
+        precondition(verifiedRestore.cards.map(\.id) == [b, c])
+        verifiedRestore.clearAllCards()
+        // Keep the original view-model's own saved records for the later skin checks.
+        relaunched.saveCards()
+        print("Immediate scan/verify autosave, names, reconnect and per-device isolation passed")
         // Images are owned copies, duplicate imports reuse one entry, and assignment
         // history survives restarts independently for each device/card pair.
         func fixture(_ name: String, _ red: Int) throws -> URL {

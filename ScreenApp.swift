@@ -742,7 +742,7 @@ class AppViewModel: ObservableObject {
         if let data = cardDefaults.data(forKey: walletStorageKey),
            let saved = try? JSONDecoder().decode([WalletSavedCard].self, from: data) {
             records = saved
-        } else {
+        } else if activeCardDeviceID == nil {
             // Old stores have no device provenance. Import once as unconfirmed,
             // including an explicitly empty store so deleted cards stay deleted.
             var loaded = cardDefaults.stringArray(forKey: storageKey)
@@ -759,18 +759,21 @@ class AppViewModel: ObservableObject {
                 }
             }
             records = (loaded ?? []).filter { !WalletScanParser.placeholders.contains($0) }.map { WalletSavedCard(id: $0) }
+        } else {
+            // A new device starts empty, without another device's legacy IDs.
+            records = []
         }
         cards = WalletSavedCard.unique(records).map { record in
             let url = record.imagePath.map { URL(fileURLWithPath: $0) }
             return CardItem(id: record.id, isSelected: record.selected, customImageURL: url,
-                            customImage: url.flatMap { NSImage(contentsOf: $0) }, confirmed: record.confirmed)
+                            customImage: url.flatMap { NSImage(contentsOf: $0) }, displayName: record.displayName, confirmed: record.confirmed)
         }
         log("Loaded \(cards.count) saved card(s); \(confirmedCardIDs.count) previously scanned on this iPhone.")
     }
 
     func saveCards() {
         let records = WalletSavedCard.unique(cards.map {
-            WalletSavedCard(id: $0.id, confirmed: $0.confirmed, imagePath: $0.customImageURL?.path, selected: $0.isSelected)
+            WalletSavedCard(id: $0.id, confirmed: $0.confirmed, imagePath: $0.customImageURL?.path, selected: $0.isSelected, displayName: $0.displayName)
         })
         if let data = try? JSONEncoder().encode(records) {
             cardDefaults.set(data, forKey: walletStorageKey)
@@ -789,6 +792,13 @@ class AppViewModel: ObservableObject {
         pendingActivationIDs = []
         loadSavedCards()
         saveCards()
+        if udid != nil, !cards.isEmpty {
+            scannerMessage = "Restored \(cards.count) saved card(s) for this iPhone. Scan Cards to verify current Wallet activity."
+        } else {
+            scannerMessage = udid == nil
+                ? "Connect your iPhone to automatically load its saved cards."
+                : "No saved cards for this iPhone. Scan Cards to save them automatically."
+        }
     }
 
     func refreshWalletCatalog() {
@@ -833,8 +843,9 @@ class AppViewModel: ObservableObject {
                 self.walletCatalog = result
                 self.isReadingWalletCache = false
                 for index in self.cards.indices {
-                    let name = result.name(for: self.cards[index].id)
-                    if self.cards[index].displayName != name { self.cards[index].displayName = name }
+                    if let name = result.name(for: self.cards[index].id), self.cards[index].displayName != name {
+                        self.cards[index].displayName = name
+                    }
                 }
                 if self.isScanningCards {
                     self.reconcilePendingPaymentActivations()
@@ -845,13 +856,16 @@ class AppViewModel: ObservableObject {
     }
 
     func recordScannedCard(_ id: String) {
+        guard activeCardDeviceID != nil, !WalletScanParser.placeholders.contains(id) else { return }
         let newlySeen = currentScanIDs.insert(id).inserted
         if let index = cards.firstIndex(where: { $0.id == id }) {
             if !cards[index].confirmed { cards[index].confirmed = true }
+            if let name = walletCatalog.name(for: id) { cards[index].displayName = name }
         } else {
             cards.append(CardItem(id: id, displayName: walletCatalog.name(for: id), confirmed: true))
             NSSound(named: "Glass")?.play()
         }
+        saveCards()
         scannerMessage = "Detected \(currentScanIDs.count) distinct card(s) this scan. Open any missing card in Wallet to check it."
         if newlySeen && (walletCatalog.paymentStatus != "matched" || walletCatalog.name(for: id) == nil) {
             catalogRefreshTask?.cancel()
@@ -867,14 +881,17 @@ class AppViewModel: ObservableObject {
     }
 
     func recordPreloadedCard(_ id: String) {
+        guard activeCardDeviceID != nil, !WalletScanParser.placeholders.contains(id) else { return }
         guard currentPreloadedIDs.insert(id).inserted else { return }
         if let index = cards.firstIndex(where: { $0.id == id }) {
             if !cards[index].confirmed { cards[index].confirmed = true }
+            if let name = walletCatalog.name(for: id) { cards[index].displayName = name }
         } else {
             cards.append(CardItem(id: id, displayName: walletCatalog.name(for: id), confirmed: true))
             NSSound(named: "Glass")?.play()
         }
-        scannerMessage = "Verified \(currentVerifiedCardIDs.count) card(s) from this iPhone's current Wallet activity."
+        saveCards()
+        scannerMessage = "Verified and saved \(currentVerifiedCardIDs.count) card(s) for this iPhone."
     }
 
     @discardableResult
