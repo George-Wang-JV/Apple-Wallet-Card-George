@@ -11,8 +11,8 @@ Scan Cards 检测/验证成功后，Card ID、名称、选中状态及卡面路�
 ## 使用卡面库
 
 - 顶部 **Skin Library → Import Images…**：一次导入多张图片。无须连接手机。
-- 点击卡片或悬停后选择 **Change Skin**：从库中选择，或导入新图片后点击 **Use Skin**。
-- 悬停后选择 **Skin History**：查看这张卡在当前 iPhone 上曾分配过的卡面，点击 **Use Skin** 切换。右键菜单也有这两个入口。
+- 点击卡面打开卡面库：从库中选择，或导入新图片后点击 **Use Skin**。
+- 在卡面库内切换到 **Skin History**：查看这张卡在当前 iPhone 上曾分配过的卡面，点击 **Use Skin** 切换。
 - 历史记录包括已选择、尚未写入手机的卡面；切换只改变本地预览。点击 **Flash Skins** 才写入手机。
 - 拖入卡片的图片，以及批量指定的图片，也会保存到库中。同一图片重复导入会去重。
 - 图片副本与索引保存在 `~/Library/Application Support/AirCard/SkinLibrary/`，原图移动或删除不影响复用。此目录不在 Git 仓库中，不会随 push 上传。

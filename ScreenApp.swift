@@ -1922,7 +1922,6 @@ struct WalletCardView: View {
     var isFlashed: Bool = false
     var isVerified: Bool = true
     let onPickImage: () -> Void
-    let onHistory: () -> Void
     let onClearImage: () -> Void
     let onDelete: () -> Void
     let onDropImage: (URL) -> Void
@@ -2025,27 +2024,6 @@ struct WalletCardView: View {
             .shadow(color: .black.opacity(isHovered ? 0.22 : 0.12), radius: isHovered ? 10 : 5, y: isHovered ? 5 : 2)
             .onHover { h in isHovered = h }
             .onTapGesture { onPickImage() }
-            .overlay(alignment: .bottom) {
-                if isHovered {
-                    HStack(spacing: 8) {
-                        Button(action: onPickImage) {
-                            Label("Change Skin", systemImage: "photo.badge.arrow.forward")
-                        }
-                        Button(action: onHistory) {
-                            Label("Skin History", systemImage: "clock.arrow.circlepath")
-                        }
-                    }
-                    .font(.caption.weight(.semibold))
-                    .buttonStyle(.bordered)
-                    .padding(8)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-                    .padding(.bottom, 10)
-                }
-            }
-            .contextMenu {
-                Button("Change Skin", action: onPickImage)
-                Button("Skin History", action: onHistory)
-            }
             .onDrop(of: [UTType.fileURL, UTType.image], isTargeted: $isTargeted) { providers in
                 guard let provider = providers.first else { return false }
                 if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
@@ -2252,7 +2230,6 @@ struct ContentView: View {
                                     isFlashed: vm.isSkinFlashed(cardItem),
                                     isVerified: vm.currentVerifiedCardIDs.contains(cardID),
                                     onPickImage: { openCardImagePicker(for: cardID) },
-                                    onHistory: { skinBrowser = SkinBrowserRequest(cardID: cardID, deviceID: vm.skinHistoryDeviceID, historyOnly: true) },
                                     onClearImage: { vm.clearCardImage(for: cardID) },
                                     onDelete: { vm.deleteCard(id: cardID) },
                                     onDropImage: { url in
