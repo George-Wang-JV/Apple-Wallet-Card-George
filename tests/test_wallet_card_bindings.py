@@ -24,11 +24,15 @@ class WalletCardBindingTests(unittest.TestCase):
             source.write_text((root / "AirCardApp.swift").read_text().replace("@main\n", ""))
             binary = Path(directory) / "binding-tests"
             flags = ["-D", "LEGACY_INDEX_BINDINGS"] if os.environ.get("AIRCARD_TEST_LEGACY_BINDINGS") else []
+            overlay = root / ".tmp/swift-overlay.json"
+            compiler_flags = ["-vfsoverlay", str(overlay)] if overlay.exists() else []
             compiled = subprocess.run([
-                "swiftc", "-sdk", sdk, "-parse-as-library", *flags,
+                "swiftc", *compiler_flags, "-module-cache-path", str(root / ".tmp/swift-modules"),
+                "-sdk", sdk, "-parse-as-library", *flags,
                 str(source),
                 str(root / "Sources/WalletDiscovery.swift"),
                 str(root / "Sources/WalletDiagnosticsView.swift"),
+                str(root / "Sources/SkinLibrary.swift"),
                 str(root / "tests/WalletCardBindingTests.swift"),
                 "-o", str(binary),
             ], capture_output=True, text=True)

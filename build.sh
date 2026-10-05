@@ -74,6 +74,7 @@ cp aircard.py "$RESOURCES_DIR/"
 cp aircard_backend.py "$RESOURCES_DIR/"
 cp card_assets.py "$RESOURCES_DIR/"
 cp wallet_catalog.py "$RESOURCES_DIR/"
+cp LICENSE "$RESOURCES_DIR/"
 
 # A bundle without these cannot talk to a device at all, so fail here instead
 # of shipping an app that reports "No iPhone found" for every user.
@@ -84,7 +85,7 @@ for tool in device_helper airtraffic_host; do
     fi
 done
 
-echo "==> [4/6] Compiling universal Swift binary (arm64 + x86_64)..."
+echo "==> [4/6] Compiling Swift application..."
 if [ -z "${SWIFT_SDK:-}" ]; then
     SWIFT_SDK="$(xcrun --sdk macosx --show-sdk-path)"
     CLT_SWIFTUI_SDK="/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk"
@@ -92,9 +93,36 @@ if [ -z "${SWIFT_SDK:-}" ]; then
         SWIFT_SDK="$CLT_SWIFTUI_SDK"
     fi
 fi
-swiftc -sdk "$SWIFT_SDK" -O -parse-as-library -target arm64-apple-macosx14.0 AirCardApp.swift Sources/WalletDiscovery.swift Sources/WalletDiagnosticsView.swift -o build/AirCard_arm64
-swiftc -sdk "$SWIFT_SDK" -O -parse-as-library -target x86_64-apple-macosx14.0 AirCardApp.swift Sources/WalletDiscovery.swift Sources/WalletDiagnosticsView.swift -o build/AirCard_x86_64
-lipo -create -output "${MACOS_DIR}/AirCard" build/AirCard_arm64 build/AirCard_x86_64
+# Keep compiler caches local. Some upgraded Command Line Tools installations
+# contain both old and new SwiftBridging definitions. Mask only the obsolete
+# module map for this compiler invocation, without editing system files.
+mkdir -p "$SCRIPT_DIR/.tmp/swift-modules"
+SWIFT_FLAGS=(-sdk "$SWIFT_SDK" -module-cache-path "$SCRIPT_DIR/.tmp/swift-modules")
+SWIFT_INCLUDE="$(xcode-select -p)/usr/include/swift"
+if [ -f "$SWIFT_INCLUDE/module.modulemap" ] && [ -f "$SWIFT_INCLUDE/bridging.modulemap" ] &&
+   grep -q 'module SwiftBridging' "$SWIFT_INCLUDE/module.modulemap" &&
+   grep -q 'module SwiftBridging' "$SWIFT_INCLUDE/bridging.modulemap"; then
+    python3 - "$SCRIPT_DIR/.tmp" "$SWIFT_INCLUDE/module.modulemap" <<'PYOVERLAY'
+import json
+import pathlib
+import sys
+root = pathlib.Path(sys.argv[1])
+empty = root / "obsolete.modulemap"
+empty.write_text("// Duplicate legacy module map hidden for this build.\n")
+(root / "swift-overlay.json").write_text(json.dumps({"version": 0, "roots": [
+    {"type": "file", "name": sys.argv[2], "external-contents": str(empty)}
+]}))
+PYOVERLAY
+    SWIFT_FLAGS+=(-vfsoverlay "$SCRIPT_DIR/.tmp/swift-overlay.json")
+fi
+SWIFT_SOURCES=(AirCardApp.swift Sources/WalletDiscovery.swift Sources/WalletDiagnosticsView.swift Sources/SkinLibrary.swift)
+if [ "${1:-}" = "--dev" ]; then
+    swiftc "${SWIFT_FLAGS[@]}" -Onone -g -parse-as-library -target "$(uname -m)-apple-macosx14.0" "${SWIFT_SOURCES[@]}" -o "${MACOS_DIR}/AirCard"
+else
+    swiftc "${SWIFT_FLAGS[@]}" -O -parse-as-library -target arm64-apple-macosx14.0 "${SWIFT_SOURCES[@]}" -o build/AirCard_arm64
+    swiftc "${SWIFT_FLAGS[@]}" -O -parse-as-library -target x86_64-apple-macosx14.0 "${SWIFT_SOURCES[@]}" -o build/AirCard_x86_64
+    lipo -create -output "${MACOS_DIR}/AirCard" build/AirCard_arm64 build/AirCard_x86_64
+fi
 chmod +x "${MACOS_DIR}/AirCard"
 
 echo "==> [5/6] Setting permissions and signing ${APP_NAME}.app bundle..."
@@ -140,6 +168,11 @@ for binary in "${MACOS_DIR}/${APP_NAME}" "${BIN_DIR}"/*; do
         exit 1
     fi
 done
+
+if [ "${1:-}" = "--dev" ]; then
+    echo "Development app ready: $APP_DIR (DMG skipped)"
+    exit 0
+fi
 
 echo "==> [6/6] Generating styled DMG (${APP_NAME}.dmg)..."
 DMG_STAGING="/tmp/aircard_dmg_staging"

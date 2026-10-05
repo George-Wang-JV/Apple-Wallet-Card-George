@@ -1,5 +1,7 @@
 # AirCard 🎴
 
+Local customization: reusable **Skin Library**, per-card **Skin History**, and a streamlined interface without donation UI. See [本地开发与 GitHub 同步](docs/local-development.zh-CN.md) for usage and `bash build.sh --dev`.
+
 > **Apple Wallet Card Skinner & Lockscreen Passcode Themer for iOS 18+ (No Jailbreak Required)**  
 > **Tested on iOS 27 release.**
 > Powered by the `airlift` AirTraffic sync exploit.

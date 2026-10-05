@@ -1,9 +1,10 @@
 import Foundation
+import AppKit
 
 @main
 struct WalletViewModelTests {
     @MainActor
-    static func main() {
+    static func main() throws {
         let suite = "AirCardWalletTests." + UUID().uuidString
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
@@ -11,7 +12,11 @@ struct WalletViewModelTests {
         let b = String(repeating: "B", count: 27) + "="
         let c = String(repeating: "C", count: 27) + "="
         defaults.set([b, a, b], forKey: "mak5er.aircard.savedCards")
-        let vm = AppViewModel(cardDefaults: defaults, connectOnLaunch: false)
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("AirCardSkinTests-" + UUID().uuidString)
+        try FileManager.default.createDirectory(at: temp, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: temp) }
+        let library = SkinLibrary(directory: temp.appendingPathComponent("library"))
+        let vm = AppViewModel(cardDefaults: defaults, connectOnLaunch: false, skinLibrary: library)
         precondition(vm.cards.map(\.id) == [b, a])
         precondition(vm.currentVerifiedCards.isEmpty) // Saved records stay hidden until this scan sees them.
         precondition(vm.confirmedCardIDs.isEmpty) // Legacy IDs have no device provenance.
@@ -51,7 +56,7 @@ struct WalletViewModelTests {
         precondition(vm.confirmedCardIDs == [b])
         vm.activateCardDevice("first-phone")
         precondition(vm.cards.isEmpty) // Clear must not resurrect legacy JSON/defaults.
-        let relaunched = AppViewModel(cardDefaults: defaults, connectOnLaunch: false)
+        let relaunched = AppViewModel(cardDefaults: defaults, connectOnLaunch: false, skinLibrary: library)
         relaunched.activateCardDevice("first-phone")
         precondition(relaunched.cards.isEmpty)
         relaunched.activateCardDevice("second-phone")
@@ -62,6 +67,62 @@ struct WalletViewModelTests {
         precondition(relaunched.cards.count == countBeforePreload + 1)
         precondition(relaunched.cards.first(where: { $0.id == c })?.confirmed == true)
         precondition(relaunched.currentVerifiedCards.map(\.id) == [c])
+        // Images are owned copies, duplicate imports reuse one entry, and assignment
+        // history survives restarts independently for each device/card pair.
+        func fixture(_ name: String, _ red: Int) throws -> URL {
+            let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 4, pixelsHigh: 4,
+                                      bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,
+                                      isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+            for y in 0..<4 { for x in 0..<4 {
+                rep.setColor(NSColor(calibratedRed: CGFloat(red) / 255, green: 0.3, blue: 0.6, alpha: 1), atX: x, y: y)
+            } }
+            let url = temp.appendingPathComponent(name + ".png")
+            try rep.representation(using: .png, properties: [:])!.write(to: url)
+            return url
+        }
+        let sourceA = try fixture("Blue", 20)
+        let sourceB = try fixture("Pink", 220)
+        let firstSkin = try library.importImage(sourceA)
+        let duplicate = try library.importImage(sourceA)
+        precondition(firstSkin.id == duplicate.id && library.skins.count == 1)
+        precondition(relaunched.setCardImage(for: b, url: sourceA))
+        precondition(relaunched.setCardImage(for: b, url: sourceB))
+        let secondSkin = library.skins.first { $0.id != firstSkin.id }!
+        precondition(library.history(deviceID: "second-phone", cardID: b).map(\.id) == [secondSkin.id, firstSkin.id])
+        precondition(library.history(deviceID: "first-phone", cardID: b).isEmpty)
+        precondition(library.history(deviceID: "second-phone", cardID: c).isEmpty)
+        try FileManager.default.removeItem(at: sourceA)
+        precondition(NSImage(contentsOf: library.url(for: firstSkin)) != nil)
+        let restored = SkinLibrary(directory: library.directory)
+        precondition(restored.skins.count == 2)
+        precondition(restored.history(deviceID: "second-phone", cardID: b).count == 2)
+        precondition(relaunched.setCardImage(for: b, url: restored.url(for: firstSkin)))
+        precondition(relaunched.cards.first { $0.id == b }?.customImageURL == restored.url(for: firstSkin))
+        precondition(library.history(deviceID: "second-phone", cardID: b).map(\.id) == [firstSkin.id, secondSkin.id])
+        let invalid = temp.appendingPathComponent("invalid.png")
+        try Data("not an image".utf8).write(to: invalid)
+        precondition(!relaunched.setCardImage(for: b, url: invalid))
+        precondition(relaunched.cards.first { $0.id == b }?.customImageURL == restored.url(for: firstSkin))
+        precondition(library.skins.count == 2)
+        relaunched.clearCardImage(for: b)
+        precondition(library.history(deviceID: "second-phone", cardID: b).count == 2)
+        relaunched.isFlashing = true
+        precondition(!relaunched.setCardImage(for: b, url: sourceB))
+        relaunched.isFlashing = false
+        precondition(!relaunched.setCardImage(for: "deleted-card", url: sourceB))
+        // Corrupt indexes must not silently discard an existing library.
+        let index = library.directory.appendingPathComponent("index.json")
+        let broken = Data("broken index".utf8)
+        try broken.write(to: index)
+        let corrupt = SkinLibrary(directory: library.directory)
+        precondition(corrupt.loadError != nil)
+        do {
+            try corrupt.importImage(sourceB)
+            preconditionFailure("A corrupt index must block writes")
+        } catch { }
+        let preservedIndex = try Data(contentsOf: index)
+        precondition(preservedIndex == broken)
+        print("Skin library deduplication, owned copies, restore, isolation, history, invalid input and corrupt-index protection passed")
         print("Wallet view model migration, device isolation, repeat scans, skin identity and clear/relaunch passed")
     }
 }
