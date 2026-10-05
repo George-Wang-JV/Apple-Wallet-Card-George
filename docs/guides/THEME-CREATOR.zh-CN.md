@@ -85,7 +85,7 @@
 
 ## 源码依据
 
-- [AirCardApp.swift](../../AirCardApp.swift)：`KeypadSlicer`、`PasscodeThemeExporter`、`applyDevicePreferences`、`inspectPasscodeTheme`、`editLoadedThemeInCreator`、`openSavePasscodeThemePanel` 及制作器界面。
+- [ScreenApp.swift](../../ScreenApp.swift)：`KeypadSlicer`、`PasscodeThemeExporter`、`applyDevicePreferences`、`inspectPasscodeTheme`、`editLoadedThemeInCreator`、`openSavePasscodeThemePanel` 及制作器界面。
 - [aircard_backend.py](../../aircard_backend.py)：`parse_passthm_archive`、`cmd_inspect_passthm` 与 `cmd_flash_passthm` 的包解析、预览和文件目标处理。
 - [Sources/device_helper.m](../../Sources/device_helper.m)：`Language` 与 `EnhancedTextLegibility` 的读取。
 - [上游 README](https://github.com/Mak5er/AirCard/blob/main/README.md#how-to-apply-lockscreen-passcode-themes-passthm)：手机刷新步骤。

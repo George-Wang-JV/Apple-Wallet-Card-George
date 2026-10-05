@@ -8,7 +8,7 @@ echo "==> [1/6] Building universal helper binaries (device_helper & airtraffic_h
 make clean
 make all
 
-APP_NAME="AirCard"
+APP_NAME="Screen"
 APP_DIR="build/${APP_NAME}.app"
 CONTENTS_DIR="${APP_DIR}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
@@ -29,15 +29,15 @@ cat << 'EOF' > "${CONTENTS_DIR}/Info.plist"
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleExecutable</key>
-    <string>AirCard</string>
+    <string>Screen</string>
     <key>CFBundleIdentifier</key>
     <string>com.mak5er.aircard</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>AirCard</string>
+    <string>Screen</string>
     <key>CFBundleDisplayName</key>
-    <string>AirCard</string>
+    <string>Screen</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundlePackageType</key>
@@ -115,15 +115,15 @@ empty.write_text("// Duplicate legacy module map hidden for this build.\n")
 PYOVERLAY
     SWIFT_FLAGS+=(-vfsoverlay "$SCRIPT_DIR/.tmp/swift-overlay.json")
 fi
-SWIFT_SOURCES=(AirCardApp.swift Sources/WalletDiscovery.swift Sources/WalletDiagnosticsView.swift Sources/SkinLibrary.swift)
+SWIFT_SOURCES=(ScreenApp.swift Sources/WalletDiscovery.swift Sources/WalletDiagnosticsView.swift Sources/SkinLibrary.swift)
 if [ "${1:-}" = "--dev" ]; then
-    swiftc "${SWIFT_FLAGS[@]}" -Onone -g -parse-as-library -target "$(uname -m)-apple-macosx14.0" "${SWIFT_SOURCES[@]}" -o "${MACOS_DIR}/AirCard"
+    swiftc "${SWIFT_FLAGS[@]}" -Onone -g -parse-as-library -target "$(uname -m)-apple-macosx14.0" "${SWIFT_SOURCES[@]}" -o "${MACOS_DIR}/Screen"
 else
-    swiftc "${SWIFT_FLAGS[@]}" -O -parse-as-library -target arm64-apple-macosx14.0 "${SWIFT_SOURCES[@]}" -o build/AirCard_arm64
-    swiftc "${SWIFT_FLAGS[@]}" -O -parse-as-library -target x86_64-apple-macosx14.0 "${SWIFT_SOURCES[@]}" -o build/AirCard_x86_64
-    lipo -create -output "${MACOS_DIR}/AirCard" build/AirCard_arm64 build/AirCard_x86_64
+    swiftc "${SWIFT_FLAGS[@]}" -O -parse-as-library -target arm64-apple-macosx14.0 "${SWIFT_SOURCES[@]}" -o build/Screen_arm64
+    swiftc "${SWIFT_FLAGS[@]}" -O -parse-as-library -target x86_64-apple-macosx14.0 "${SWIFT_SOURCES[@]}" -o build/Screen_x86_64
+    lipo -create -output "${MACOS_DIR}/Screen" build/Screen_arm64 build/Screen_x86_64
 fi
-chmod +x "${MACOS_DIR}/AirCard"
+chmod +x "${MACOS_DIR}/Screen"
 
 echo "==> [5/6] Setting permissions and signing ${APP_NAME}.app bundle..."
 chmod -R 755 "$APP_DIR"
@@ -175,7 +175,7 @@ if [ "${1:-}" = "--dev" ]; then
 fi
 
 echo "==> [6/6] Generating styled DMG (${APP_NAME}.dmg)..."
-DMG_STAGING="/tmp/aircard_dmg_staging"
+DMG_STAGING="/tmp/screen_dmg_staging"
 rm -rf "$DMG_STAGING"
 mkdir -p "$DMG_STAGING"
 cp -R "$APP_DIR" "$DMG_STAGING/"
@@ -184,13 +184,13 @@ rm -f "build/${APP_NAME}.dmg"
 
 if command -v create-dmg >/dev/null 2>&1; then
     create-dmg \
-        --volname "AirCard" \
+        --volname "Screen" \
         --background "dmg_assets/background_700.png" \
         --window-pos 200 120 \
         --window-size 700 460 \
         --icon-size 110 \
-        --icon "AirCard.app" 175 220 \
-        --hide-extension "AirCard.app" \
+        --icon "Screen.app" 175 220 \
+        --hide-extension "Screen.app" \
         --app-drop-link 525 220 \
         --add-file "README.txt" "dmg_assets/README.txt" 350 360 \
         --filesystem APFS \
@@ -199,7 +199,7 @@ if command -v create-dmg >/dev/null 2>&1; then
         "$DMG_STAGING"
 else
     ln -s /Applications "$DMG_STAGING/Applications"
-    hdiutil create -volname "AirCard" -srcfolder "$DMG_STAGING" -ov -format UDZO "build/${APP_NAME}.dmg"
+    hdiutil create -volname "Screen" -srcfolder "$DMG_STAGING" -ov -format UDZO "build/${APP_NAME}.dmg"
 fi
 
 # Sign the disk image too, otherwise the signature stops at the app inside it.

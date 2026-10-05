@@ -18,10 +18,10 @@ class WalletCardBindingTests(unittest.TestCase):
                 ["xcrun", "--sdk", "macosx", "--show-sdk-path"], text=True
             ).strip()
         with tempfile.TemporaryDirectory() as directory:
-            source = Path(directory) / "AirCardApp.swift"
+            source = Path(directory) / "ScreenApp.swift"
             # Keep the entire production implementation; only replace its entry
             # point with the regression executable's @main. No app/device startup.
-            source.write_text((root / "AirCardApp.swift").read_text().replace("@main\n", ""))
+            source.write_text((root / "ScreenApp.swift").read_text().replace("@main\n", ""))
             binary = Path(directory) / "binding-tests"
             flags = ["-D", "LEGACY_INDEX_BINDINGS"] if os.environ.get("AIRCARD_TEST_LEGACY_BINDINGS") else []
             overlay = root / ".tmp/swift-overlay.json"

@@ -8,7 +8,7 @@
 
 ## 现象与预期
 
-用户反馈：大部分卡能在首次扫描中出现，其余部分卡可通过双击侧键、认证并选卡后出现；国泰会员卡和中国银行银联卡仍未进入列表。截图显示 AirCard 有 12 张卡。
+用户反馈：大部分卡能在首次扫描中出现，其余部分卡可通过双击侧键、认证并选卡后出现；国泰会员卡和中国银行银联卡仍未进入列表。截图显示 Screen 有 12 张卡。
 
 预期：能可靠确认属于当前 iPhone 的卡应显示在对应槽位；不能用 Mac 缓存中的候选记录直接替代手机存在性验证。界面数量只表示本次识别结果，不是 Wallet 总卡数。
 
@@ -46,7 +46,7 @@ nfcd: Express mode limited to type: (0 -> 0),
 
 `Sources/WalletDiscovery.swift` 只解析特定 `.pkpass`、`.cache`、`.pkcache` 路径和 `setActivePaymentApplet ... requestedApplet ... identifier=`。它没有解析上述多行 `passIDs[global]` 结构。
 
-`AirCardApp.swift` 逐行过滤 Wallet 上下文；独立的 `nfcd` 消息及仅包含 ID 的续行也可能被过滤。因此，修复需要检查完整消息的上下文保留，不能只放宽 ID 正则表达式。
+`ScreenApp.swift` 逐行过滤 Wallet 上下文；独立的 `nfcd` 消息及仅包含 ID 的续行也可能被过滤。因此，修复需要检查完整消息的上下文保留，不能只放宽 ID 正则表达式。
 
 ### 结论与待确认事项
 

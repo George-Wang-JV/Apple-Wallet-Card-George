@@ -6,7 +6,7 @@
 
 ## 卡片列表保存了什么
 
-AirCard 保存的是卡片的**内部标识**，不是卡号，也不是手机钱包的实时清单。程序启动时会读取 Mac 上的已保存记录；扫描找到新标识时将其追加并保存。
+Screen 保存的是卡片的**内部标识**，不是卡号，也不是手机钱包的实时清单。程序启动时会读取 Mac 上的已保存记录；扫描找到新标识时将其追加并保存。
 
 | 内容 | 关闭再打开 app 后 |
 | --- | --- |
@@ -63,6 +63,6 @@ AirCard 保存的是卡片的**内部标识**，不是卡号，也不是手机�
 
 ## 代码与验证依据
 
-- [AirCardApp.swift](../../AirCardApp.swift)：`CardItem`、`loadSavedCards`、`saveCards`、`setCardImage`、`clearAllCards`、`openBulkImagePicker`、`readyToFlashCount` 和 `applySkin`。
+- [ScreenApp.swift](../../ScreenApp.swift)：`CardItem`、`loadSavedCards`、`saveCards`、`setCardImage`、`clearAllCards`、`openBulkImagePicker`、`readyToFlashCount` 和 `applySkin`。
 - [aircard.py](../../aircard.py)：`get_connected_device` 选择可用设备；[aircard_backend.py](../../aircard_backend.py)：`cmd_flash` 的素材写入、缓存清理和退出结果。
 - [卡面后端测试](../../tests/test_card_flash.py)验证模拟写入或缓存失败时不会报告成功；多卡队列停止和持久化规则来自 Swift 源码检查，未在本文中宣称为实机验证。

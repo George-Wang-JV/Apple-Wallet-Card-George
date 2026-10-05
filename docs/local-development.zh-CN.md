@@ -12,13 +12,19 @@
 - 图片副本与索引保存在 `~/Library/Application Support/AirCard/SkinLibrary/`，原图移动或删除不影响复用。此目录不在 Git 仓库中，不会随 push 上传。
 - 卡面库初始为空。这是本地个人图库，不自带银行或社区卡面，也不提供云同步。
 
+## 编辑和删除卡面
+
+打开 **Skin Library → Edit**，点击图片下面的 **Delete**，确认后移到 Mac 废纸篓，并从所有卡面历史中移除。原始导入图片和 iPhone 上的卡面不会改变。
+
+仍被任何已保存卡片使用的图片显示 **In Use**：先清除或更换那张卡的卡面，再删除。改名后保留旧版数据目录及设置标识，已有图片和卡片可继续使用。
+
 ## 开发版构建
 
-在 AirCard 仓库目录执行：
+在 Screen 仓库目录执行：
 
 ```sh
 bash build.sh --dev
-open build/AirCard.app
+open build/Screen.app
 ```
 
 `--dev` 编译当前 Mac 架构的 Swift 调试版本并跳过 DMG；设备辅助程序仍是通用版本。修改后先退出旧应用，再重新构建和打开。需要 macOS 14+、可用的 Apple Command Line Tools/SDK 和 Python 3。
@@ -44,7 +50,7 @@ git remote rename origin upstream
 git remote add origin https://github.com/George-Wang-JV/Apple-Wallet-Card-George.git
 git remote -v
 git status
-git add AirCardApp.swift Sources/SkinLibrary.swift build.sh README.md docs/local-development.zh-CN.md tests/test_wallet_viewmodel.swift tests/test_wallet_discovery.py tests/test_wallet_card_bindings.py
+git add ScreenApp.swift Sources/SkinLibrary.swift build.sh README.md docs/local-development.zh-CN.md tests/test_wallet_viewmodel.swift tests/test_wallet_discovery.py tests/test_wallet_card_bindings.py
 git commit -m "Add local skin library and per-card history; remove donation UI"
 git push -u origin feature/skin-library
 ```
@@ -61,7 +67,7 @@ GitHub 身份验证可用 GitHub CLI 的 `gh auth login` 配合 `gh auth setup-g
 git clone --branch feature/skin-library https://github.com/George-Wang-JV/Apple-Wallet-Card-George.git
 cd Apple-Wallet-Card-George
 bash build.sh --dev
-open build/AirCard.app
+open build/Screen.app
 ```
 
 之后开始修改前，在工作区没有未提交改动时先 `git pull --ff-only`，完成后 commit/push。另一台 Mac 再 pull 并重新构建即可。云端 Linux 编辑器可以改代码，但 SwiftUI 应用的构建和运行仍需要 Mac；USB 扫卡需要手机连接到运行应用的那台 Mac。

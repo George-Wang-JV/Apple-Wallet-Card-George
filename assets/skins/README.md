@@ -11,13 +11,13 @@
 
 ## 使用 / Usage
 
-保存 PNG 原图后，将图片拖到 AirCard 的目标卡片上，查看预览，再点击 **Flash Skins**。所有文件均保留上传时的原始图片，没有重新生成、裁剪或修改。
+保存 PNG 原图后，将图片拖到 Screen 的目标卡片上，查看预览，再点击 **Flash Skins**。所有文件均保留上传时的原始图片，没有重新生成、裁剪或修改。
 
-Save an original PNG, drag it onto the target card in AirCard, check the preview, then click **Flash Skins**. All files are preserved exactly as supplied, without regeneration, cropping, or other edits.
+Save an original PNG, drag it onto the target card in Screen, check the preview, then click **Flash Skins**. All files are preserved exactly as supplied, without regeneration, cropping, or other edits.
 
-AirCard 当前会将卡面图片等比填满并居中裁剪至 **1536 × 969**。因此这里的原图预览不等于手机上最终显示的裁切效果。可先自行按相同比例排版，避免重要图案或文字贴边。
+Screen 当前会将卡面图片等比填满并居中裁剪至 **1536 × 969**。因此这里的原图预览不等于手机上最终显示的裁切效果。可先自行按相同比例排版，避免重要图案或文字贴边。
 
-AirCard currently scales artwork to fill and center-crops it to **1536 × 969**. These original-image previews do not show the final crop on the phone. You can prepare your own composition at that aspect ratio and keep important elements away from the edges.
+Screen currently scales artwork to fill and center-crops it to **1536 × 969**. These original-image previews do not show the final crop on the phone. You can prepare your own composition at that aspect ratio and keep important elements away from the edges.
 
 ## 来源 / Source
 

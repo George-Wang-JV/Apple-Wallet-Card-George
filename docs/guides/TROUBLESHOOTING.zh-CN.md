@@ -67,10 +67,10 @@
 
 ## 反馈时提供什么
 
-可直接复制[双语反馈模板](compatibility-report-template.md)，参照[兼容性记录](COMPATIBILITY.zh-CN.md)填写。提供 AirCard 版本或提交、iPhone 机型、iOS 与 macOS 版本，分别写明“连接 / 扫描 / 写入 / 显示”结果，附上最早的相关错误和单卡重试结果即可。卡片标识和设备 UDID 用 `<redacted>` 替换；不要附完整设备日志、完整卡号或付款信息。
+可直接复制[双语反馈模板](compatibility-report-template.md)，参照[兼容性记录](COMPATIBILITY.zh-CN.md)填写。提供 Screen 版本或提交、iPhone 机型、iOS 与 macOS 版本，分别写明“连接 / 扫描 / 写入 / 显示”结果，附上最早的相关错误和单卡重试结果即可。卡片标识和设备 UDID 用 `<redacted>` 替换；不要附完整设备日志、完整卡号或付款信息。
 
 ## 代码与验证依据
 
-- [AirCardApp.swift](../../AirCardApp.swift)：`checkDevice`、`startCardScanning`、`prepareCardImage`、`applySkin` 和日志处理。
+- [ScreenApp.swift](../../ScreenApp.swift)：`checkDevice`、`startCardScanning`、`prepareCardImage`、`applySkin` 和日志处理。
 - [aircard_backend.py](../../aircard_backend.py)：`cmd_device`、`cmd_prepare_image`、`cmd_flash`；[card_assets.py](../../card_assets.py)：PNG/PDF 素材与缓存文件名。
 - [卡面后端测试](../../tests/test_card_flash.py)：模拟素材写入、PDF 转换和缓存失败；[扫描器测试](../../tests/test_card_scanner.py)：协议与合成卡片路径。自动化检查不代表真机写入验证。

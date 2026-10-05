@@ -1,4 +1,4 @@
-# AirCard 🎴
+# Screen 🎴
 
 Local customization: reusable **Skin Library**, per-card **Skin History**, and a streamlined interface without donation UI. See [本地开发与 GitHub 同步](docs/local-development.zh-CN.md) for usage and `bash build.sh --dev`.
 
@@ -39,33 +39,33 @@ Wallet setup, detailed troubleshooting, multi-card workflows, theme creation, co
 ## Installation
 
 ### macOS (Universal DMG)
-1. Download **`AirCard.dmg`** from [Releases](https://github.com/mak5er/AirCard/releases).
-2. Open `AirCard.dmg` and drag **`AirCard.app`** into your **Applications** folder.
+1. Build **`Screen.dmg`** from this fork using `bash build.sh`, or use `bash build.sh --dev` for a local development app.
+2. Open `Screen.dmg` and drag **`Screen.app`** into your **Applications** folder.
 3. Fully compatible with both **Apple Silicon** and **Intel (x86)** Macs.
 
 > [!NOTE]
 > **First Launch on macOS (Gatekeeper):**
 > If macOS displays an unidentified developer prompt on first launch:
-> - **Method 1 (UI):** Right-click (or Control-click) `AirCard.app` in Applications ➔ click **Open** ➔ click **Open**.
+> - **Method 1 (UI):** Right-click (or Control-click) `Screen.app` in Applications ➔ click **Open** ➔ click **Open**.
 > - **Method 2 (Terminal):**
 >   ```sh
->   sudo xattr -cr /Applications/AirCard.app
+>   sudo xattr -cr /Applications/Screen.app
 >   ```
 
 > [!TIP]
 > **macOS Developer Tools / Python Requirement:**
-> AirCard uses macOS native Python 3 (`/usr/bin/python3`). If macOS prompts that Developer Tools are required or if you recently installed/updated Xcode:
+> Screen uses macOS native Python 3 (`/usr/bin/python3`). If macOS prompts that Developer Tools are required or if you recently installed/updated Xcode:
 > - Install Command Line Tools: `xcode-select --install`
 > - Accept Xcode license if applicable: `sudo xcodebuild -license accept`
 
 > [!NOTE]
-> **Windows users:** an unofficial Windows port is available at [**AirCard-Windows**](https://github.com/Lumid-Off/AirCard-Windows).
+> **Windows users:** an unofficial Windows port is available at [**Screen-Windows**](https://github.com/Lumid-Off/AirCard-Windows).
 
 ---
 
 ## How to Customize Apple Wallet Cards
 1. Connect your iPhone to your Mac via USB cable and ensure it is unlocked and trusted.
-2. In AirCard, stay on the **Wallet Cards** tab and click **Scan Cards**.
+2. In Screen, stay on the **Wallet Cards** tab and click **Scan Cards**.
 3. On your iPhone:
    - **Double-click the Side (Power) button** to open Apple Pay.
    - Authenticate with **Face ID**.
@@ -85,7 +85,7 @@ missing cards** to distinguish current-scan matches from membership entries and
 payment caches that still need confirmation. Use **Reconnect** for connection
 problems and **Read Cache** to reread local metadata.
 
-For payment cards, AirCard uses the NFC activation event for the card you
+For payment cards, Screen uses the NFC activation event for the card you
 actually open. Wallet may also request artwork for several cards; IDs observed
 in those current iPhone log paths can appear in a batch. Once a live ID matches
 one specific remote-device cache, the remaining payment IDs from that same
@@ -111,22 +111,22 @@ that iOS replaces with `<private>` cannot be recovered by the scanner.
 
 If your device previously connected but scanning found zero cards, please try
 this build and report whether it helps. Include your iPhone model, iOS version,
-macOS version, and the AirCard version or commit tested. Avoid posting full
+macOS version, and the Screen version or commit tested. Avoid posting full
 device logs or card identifiers. See [scanner validation](docs/wallet-card-detection.md)
 for the verified environment and remaining coverage.
 
 ---
 
 ## How to Apply Lockscreen Passcode Themes (.passthm)
-1. Switch to the **Passcode Themes** tab at the top of AirCard.
+1. Switch to the **Passcode Themes** tab at the top of Screen.
 2. Drag & drop any `.passthm` file into the app (or click **Choose .passthm File**).
-3. AirCard will inspect the theme and display an interactive preview on the numeric keypad (0–9, *, #).
+3. Screen will inspect the theme and display an interactive preview on the numeric keypad (0–9, *, #).
 4. Click **Apply Passcode Theme**.
 5. Restart your iPhone to reload the lock screen cache and see your custom passcode buttons!
 
 > [!TIP]
 > **Universal Language & Bold Text Support:**  
-> AirCard automatically expands and flashes custom keypad assets for all system locales (English, Ukrainian, Russian, Spanish, German, French, etc.) and generates both standard and **Bold Text** cache bitmaps (`--white` and `--white-bold`), ensuring your theme works regardless of your iOS language or accessibility display settings!
+> Screen automatically expands and flashes custom keypad assets for all system locales (English, Ukrainian, Russian, Spanish, German, French, etc.) and generates both standard and **Bold Text** cache bitmaps (`--white` and `--white-bold`), ensuring your theme works regardless of your iOS language or accessibility display settings!
 
 ---
 
@@ -134,23 +134,23 @@ for the verified environment and remaining coverage.
 
 - [AirCards](https://aircards.org/) — A free, independently maintained
   card artwork catalog and sharing community. Browse, filter, and
-  preview designs, download PNG artwork to use with AirCard, or
+  preview designs, download PNG artwork to use with Screen, or
   publish your own creations for others to discover and use.
 
 These resources are maintained by the community and are not affiliated
-with the AirCard project.
+with the Screen project.
 
 ---
 
 ## Building from Source
 
 ```sh
-git clone https://github.com/mak5er/AirCard.git
-cd AirCard
+git clone https://github.com/George-Wang-JV/Apple-Wallet-Card-George.git
+cd Apple-Wallet-Card-George
 chmod +x build.sh
 ./build.sh
 ```
-This builds universal binaries (`arm64` + `x86_64`), bundles dependencies into `build/AirCard.app`, and outputs `build/AirCard.dmg`.
+This builds universal binaries (`arm64` + `x86_64`), bundles dependencies into `build/Screen.app`, and outputs `build/Screen.dmg`.
 
 ---
 
@@ -164,11 +164,7 @@ This builds universal binaries (`arm64` + `x86_64`), bundles dependencies into `
 
 ---
 
-## Support
 
-If you find AirCard useful, you can support future development:
+## Upstream and license
 
-- **PayPal**: [Donate via PayPal](https://www.paypal.com/donate/?hosted_button_id=98QRTC2HFRA4Y)
-- **TON**: `UQBm9KPhtMw-XVVjirUoa09wzrlyWsbeZhKfefl1Uw-qNZ-r`
-- **USDT (TRC20)**: `TDkDMCyjYxgvkWUnQiF5Erk2RyPQMT6G1n`
-- **USDT / BNB (BEP20)**: `0x0954dc491c502849d04956ef74634aa5931a08e8`
+Screen is based on [Mak5er/AirCard](https://github.com/Mak5er/AirCard). The original MIT license and copyright notice are preserved.

@@ -20,9 +20,14 @@ final class SkinLibrary: ObservableObject {
     @Published private var catalog = Catalog()
     @Published private(set) var loadError: String?
     let directory: URL
+    private let trashFile: (URL) throws -> Void
 
-    init(directory: URL? = nil) {
+    init(directory: URL? = nil, trashFile: @escaping (URL) throws -> Void = { url in
+        try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+    }) {
+        self.trashFile = trashFile
         self.directory = directory ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            // Keep the legacy data location across the Screen rename.
             .appendingPathComponent("AirCard/SkinLibrary", isDirectory: true)
         let index = self.directory.appendingPathComponent("index.json")
         if FileManager.default.fileExists(atPath: index.path) {
@@ -87,6 +92,24 @@ final class SkinLibrary: ObservableObject {
         next.histories[historyKey] = ids
         try save(next)
     }
+
+    func remove(_ skin: SavedSkin, protectedURLs: Set<URL>) throws {
+        let imageURL = url(for: skin)
+        guard !protectedURLs.contains(imageURL.standardizedFileURL) else {
+            throw NSError(domain: "SkinLibrary", code: 3, userInfo: [NSLocalizedDescriptionKey: "This skin is used by a saved card. Change or clear that card's skin before deleting it."])
+        }
+        let previous = catalog
+        var next = catalog
+        next.skins.removeAll { $0.id == skin.id }
+        next.histories = next.histories.mapValues { $0.filter { $0 != skin.id } }
+        try save(next)
+        do {
+            if FileManager.default.fileExists(atPath: imageURL.path) { try trashFile(imageURL) }
+        } catch {
+            try save(previous)
+            throw error
+        }
+    }
 }
 
 struct SkinBrowserRequest: Identifiable {
@@ -100,15 +123,19 @@ struct SkinLibrarySheet: View {
     @ObservedObject var library: SkinLibrary
     let request: SkinBrowserRequest
     let currentURL: URL?
+    let protectedURLs: Set<URL>
     let onSelect: (SavedSkin) -> Bool
     @Environment(\.dismiss) private var dismiss
     @State private var historyOnly: Bool
     @State private var errorMessage: String?
+    @State private var isEditing = false
+    @State private var pendingDelete: SavedSkin?
 
-    init(library: SkinLibrary, request: SkinBrowserRequest, currentURL: URL?, onSelect: @escaping (SavedSkin) -> Bool) {
+    init(library: SkinLibrary, request: SkinBrowserRequest, currentURL: URL?, protectedURLs: Set<URL> = [], onSelect: @escaping (SavedSkin) -> Bool) {
         self.library = library
         self.request = request
         self.currentURL = currentURL
+        self.protectedURLs = protectedURLs
         self.onSelect = onSelect
         _historyOnly = State(initialValue: request.historyOnly)
     }
@@ -141,6 +168,8 @@ struct SkinLibrarySheet: View {
                     }.pickerStyle(.segmented).frame(width: 260)
                 }
                 Spacer()
+                Button(isEditing ? "Finish Editing" : "Edit") { isEditing.toggle() }
+                    .disabled(library.loadError != nil || library.skins.isEmpty)
                 Text("\(displayedSkins.count) skins").foregroundStyle(.secondary)
             }
             if let message = errorMessage ?? library.loadError {
@@ -165,6 +194,19 @@ struct SkinLibrarySheet: View {
         }
         .padding(24)
         .frame(width: 720, height: 540)
+        .alert("Delete skin?", isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })) {
+            Button("Cancel", role: .cancel) { pendingDelete = nil }
+            Button("Move to Trash", role: .destructive) {
+                guard let skin = pendingDelete else { return }
+                do {
+                    try library.remove(skin, protectedURLs: protectedURLs)
+                    errorMessage = nil
+                } catch { errorMessage = error.localizedDescription }
+                pendingDelete = nil
+            }
+        } message: {
+            Text("This removes the skin from your library and all skin histories, and moves its image to the Mac's Trash. Your original imported file and iPhone are unchanged.")
+        }
     }
 
     private func skinTile(_ skin: SavedSkin) -> some View {
@@ -182,7 +224,14 @@ struct SkinLibrarySheet: View {
             .frame(height: 122).frame(maxWidth: .infinity)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             Text(skin.name).font(.callout.weight(.medium)).lineLimit(1).help(skin.name)
-            if request.cardID != nil {
+            if isEditing {
+                let inUse = protectedURLs.contains(url.standardizedFileURL)
+                Button(role: .destructive) { pendingDelete = skin } label: {
+                    Label(inUse ? "In Use" : "Delete", systemImage: "trash")
+                }
+                .disabled(inUse)
+                .help(inUse ? "Change or clear the skin on every saved card using it before deleting." : "Remove from library and history")
+            } else if request.cardID != nil {
                 Button(isCurrent ? "Current Skin" : "Use Skin") {
                     if onSelect(skin) { dismiss() }
                     else { errorMessage = "Could not assign this skin. The device or card may have changed; close this window and try again." }

@@ -67,10 +67,10 @@ The backend writes PNG/PDF assets and clears rendered files in `.cache` and `.pk
 
 ## What to include in a report
 
-Copy the [bilingual report template](compatibility-report-template.md) and follow the [compatibility record](COMPATIBILITY.en.md). Provide the AirCard version or commit, iPhone model, iOS and macOS versions; record **connection / detection / backend write / visible result** separately. Include the first relevant error and the result of a one-card retry. Replace card identifiers and device UDIDs with `<redacted>`; do not post complete device logs, full card numbers, or payment details.
+Copy the [bilingual report template](compatibility-report-template.md) and follow the [compatibility record](COMPATIBILITY.en.md). Provide the Screen version or commit, iPhone model, iOS and macOS versions; record **connection / detection / backend write / visible result** separately. Include the first relevant error and the result of a one-card retry. Replace card identifiers and device UDIDs with `<redacted>`; do not post complete device logs, full card numbers, or payment details.
 
 ## Source and validation references
 
-- [AirCardApp.swift](../../AirCardApp.swift): `checkDevice`, `startCardScanning`, `prepareCardImage`, `applySkin`, and log handling.
+- [ScreenApp.swift](../../ScreenApp.swift): `checkDevice`, `startCardScanning`, `prepareCardImage`, `applySkin`, and log handling.
 - [aircard_backend.py](../../aircard_backend.py): `cmd_device`, `cmd_prepare_image`, `cmd_flash`; [card_assets.py](../../card_assets.py): PNG/PDF assets and cache filenames.
 - [Card backend tests](../../tests/test_card_flash.py): mocked asset writes, PDF conversion, and cache failures; [scanner tests](../../tests/test_card_scanner.py): protocol handling and synthetic card paths. Automated checks do not establish real-device write compatibility.

@@ -6,7 +6,7 @@ These instructions describe the current GUI and backend code, not hardware testi
 
 ## What the card list remembers
 
-AirCard saves **internal card identifiers**, not payment card numbers or a live inventory of the phone's Wallet. It loads saved records from the Mac at startup, then appends and saves newly detected identifiers during scanning.
+Screen saves **internal card identifiers**, not payment card numbers or a live inventory of the phone's Wallet. It loads saved records from the Mac at startup, then appends and saves newly detected identifiers during scanning.
 
 | Item | After closing and reopening the app |
 | --- | --- |
@@ -63,6 +63,6 @@ The backend first tries a batch write of **one card's asset files**, then retrie
 
 ## Source and validation references
 
-- [AirCardApp.swift](../../AirCardApp.swift): `CardItem`, `loadSavedCards`, `saveCards`, `setCardImage`, `clearAllCards`, `openBulkImagePicker`, `readyToFlashCount`, and `applySkin`.
+- [ScreenApp.swift](../../ScreenApp.swift): `CardItem`, `loadSavedCards`, `saveCards`, `setCardImage`, `clearAllCards`, `openBulkImagePicker`, `readyToFlashCount`, and `applySkin`.
 - [aircard.py](../../aircard.py): `get_connected_device` chooses an available device; [aircard_backend.py](../../aircard_backend.py): `cmd_flash` asset writes, cache cleanup, and exit results.
 - [Card backend tests](../../tests/test_card_flash.py) check that mocked write or cache failures do not report success. The multi-card stopping and persistence rules were checked in Swift source; this page does not present them as real-device validation.

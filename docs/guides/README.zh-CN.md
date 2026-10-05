@@ -1,14 +1,14 @@
-# AirCard 使用指南 🎴
+# Screen 使用指南 🎴
 
 **给 Apple 钱包换一张你喜欢的卡面。**
 
-中文 · [English](README.en.md) · [下载 AirCard](https://github.com/Mak5er/AirCard/releases/latest) · [卡面素材](#卡面素材)
+中文 · [English](README.en.md) · [下载 Screen](https://github.com/Mak5er/AirCard/releases/latest) · [卡面素材](#卡面素材)
 
-这份 **AirCard 中英文入门指南与素材说明**由 [BryceYuuu](https://github.com/BryceYuuu) 整理，帮助第一次使用 AirCard 的朋友完成安装与卡面更换。AirCard 由 [Mak5er](https://github.com/Mak5er/AirCard) 及贡献者开发。
+这份 **Screen 中英文入门指南与素材说明**由 [BryceYuuu](https://github.com/BryceYuuu) 整理，帮助第一次使用 Screen 的朋友完成安装与卡面更换。Screen 由 [Mak5er](https://github.com/Mak5er/AirCard) 及贡献者开发。
 
-## AirCard 能做什么？
+## Screen 能做什么？
 
-AirCard 是一款 macOS 工具，通过 USB 连接 iPhone，自定义 Apple Wallet / Apple Pay 的卡面图片，也支持锁屏密码键盘主题（`.passthm`）及主题制作。本指南重点介绍**钱包卡面更换**。
+Screen 是一款 macOS 工具，通过 USB 连接 iPhone，自定义 Apple Wallet / Apple Pay 的卡面图片，也支持锁屏密码键盘主题（`.passthm`）及主题制作。本指南重点介绍**钱包卡面更换**。
 
 卡面图片只用于外观展示，不会创建银行卡或改变卡片的支付权限。
 
@@ -36,15 +36,15 @@ AirCard 是一款 macOS 工具，通过 USB 连接 iPhone，自定义 Apple Wall
 | 手机 | iPhone；上游标注 iOS 18+、无需越狱，具体系统与机型的表现以实际测试为准 |
 | 连接 | 一根支持数据传输的 USB 线，iPhone 保持解锁并信任这台 Mac |
 | 卡片 | 已经添加到 Apple Wallet 的卡片 |
-| 软件 | 从[原作者 Releases](https://github.com/Mak5er/AirCard/releases/latest)下载 `AirCard.dmg`；使用 DMG 无需另装 Homebrew 或 Python |
+| 软件 | 从[原作者 Releases](https://github.com/Mak5er/AirCard/releases/latest)下载 `Screen.dmg`；使用 DMG 无需另装 Homebrew 或 Python |
 
-本指南依据 **AirCard v1.2.6** 整理（2026-10-04）。上游 README 标注曾在 iOS 27 测试；这不代表所有设备都已验证。本指南没有新增实机兼容性测试。
+本指南依据 **Screen v1.2.6** 整理（2026-10-04）。上游 README 标注曾在 iOS 27 测试；这不代表所有设备都已验证。本指南没有新增实机兼容性测试。
 
 ## 五步换卡面
 
-### 1. 安装 AirCard
+### 1. 安装 Screen
 
-打开[官方下载页](https://github.com/Mak5er/AirCard/releases/latest)，在 **Assets** 中下载 `AirCard.dmg`。打开 DMG，将 `AirCard.app` 拖入 **Applications / 应用程序**，然后启动。
+打开[官方下载页](https://github.com/Mak5er/AirCard/releases/latest)，在 **Assets** 中下载 `Screen.dmg`。打开 DMG，将 `Screen.app` 拖入 **Applications / 应用程序**，然后启动。
 
 如果首次启动被 macOS 拦截，先确认文件来自上面的原作者仓库，再按[原作者安装说明](https://github.com/Mak5er/AirCard/blob/main/README.md#installation)处理。
 
@@ -54,17 +54,17 @@ AirCard 是一款 macOS 工具，通过 USB 连接 iPhone，自定义 Apple Wall
 
 ### 3. 扫描已有卡片
 
-在 AirCard 的 **Apple Wallet** 页点击 **Scan Cards**。随后在 iPhone 上：
+在 Screen 的 **Apple Wallet** 页点击 **Scan Cards**。随后在 iPhone 上：
 
 1. 双击侧边按钮，打开 Apple Pay。
 2. 按提示完成身份验证（如 Face ID）。
 3. 点选要更换卡面的卡片；必要时再次点选，或切换到另一张卡，再切回来。
 
-等待卡片出现在 Mac 上的 AirCard 窗口中。
+等待卡片出现在 Mac 上的 Screen 窗口中。
 
 ### 4. 选择素材
 
-下载上方任意一张 PNG。点击 AirCard 里的目标卡片选择图片，或把图片直接拖到卡片上。检查预览与目标卡片是否正确；可以给不同卡片分别选择图片。
+下载上方任意一张 PNG。点击 Screen 里的目标卡片选择图片，或把图片直接拖到卡片上。检查预览与目标卡片是否正确；可以给不同卡片分别选择图片。
 
 ### 5. 应用并刷新
 
@@ -106,9 +106,9 @@ AirCard 是一款 macOS 工具，通过 USB 连接 iPhone，自定义 Apple Wall
 
 ## 反馈、更新与致谢
 
-- **下载和版本更新：**[Mak5er/AirCard Releases](https://github.com/Mak5er/AirCard/releases)。安装包由原项目发布。
-- **程序问题：** 查看[上游 Issues](https://github.com/Mak5er/AirCard/issues)。反馈时提供机型、iOS、macOS 和 AirCard 版本，以及简短错误信息；不要公开完整设备日志或卡片标识。
-- **指南和素材说明：** 由 [BryceYuuu](https://github.com/BryceYuuu) 整理，独立教程仓库为 [AirCard-Guide](https://github.com/BryceYuuu/AirCard-Guide)。
+- **下载和版本更新：**[Mak5er/Screen Releases](https://github.com/Mak5er/AirCard/releases)。安装包由原项目发布。
+- **程序问题：** 查看[上游 Issues](https://github.com/Mak5er/AirCard/issues)。反馈时提供机型、iOS、macOS 和 Screen 版本，以及简短错误信息；不要公开完整设备日志或卡片标识。
+- **指南和素材说明：** 由 [BryceYuuu](https://github.com/BryceYuuu) 整理，独立教程仓库为 [Screen-Guide](https://github.com/BryceYuuu/AirCard-Guide)。
 - **原作者及贡献者：**[Mak5er](https://github.com/Mak5er)、[Lumid-Off](https://github.com/Lumid-Off)，以及提供底层 [AirLift](https://github.com/0xjohnnydev/airlift) 的 [0xjohnny](https://github.com/0xjohnnydev)。喜欢这个项目，可以给[原项目](https://github.com/Mak5er/AirCard)点个 Star，或通过[原作者支持入口](https://github.com/Mak5er/AirCard/blob/main/README.md#support)支持开发。
 
 上游代码遵循 [MIT License](../../LICENSE)，原有版权声明保持不变。新增素材由 [BryceYuuu](https://github.com/BryceYuuu) 提供，不自动适用代码的 MIT 授权，详见[素材说明](../../assets/skins/README.md)。本指南及示例卡面不代表 Apple 或任何银行的官方产品。

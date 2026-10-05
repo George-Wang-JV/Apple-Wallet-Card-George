@@ -4,7 +4,7 @@ Development branch: `kyler/dev`.
 
 ## Implemented scope
 
-AirCard keeps cards in saved discovery order and enriches their names from the
+Screen keeps cards in saved discovery order and enriches their names from the
 Mac's existing Wallet cache. Card identity, selection and skin file paths are
 stored by the full card ID, separately for each connected iPhone. Repeated
 scan events update the same item; identical display names do not merge cards.
@@ -62,7 +62,7 @@ file is moved or deleted, choose it again using the unavailable-image notice.
 
 Saved IDs may remain after a card is removed from the phone, but they are not
 shown or eligible to flash unless a new scan matches their device cache again.
-AirCard does not use a cache based only on the phone model; it requires an exact
+Screen does not use a cache based only on the phone model; it requires an exact
 live card-ID overlap first.
 
 ## Validation

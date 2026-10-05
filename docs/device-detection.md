@@ -35,7 +35,7 @@ requested again.
 | --- | --- |
 | iPhone | iPhone 16 Pro (`iPhone17,1`), iOS 27.0 (24A5370h) |
 | Mac | macOS 27.0 (26A5388g) |
-| Source baseline | AirCard 1.2.4, commit `c91d8f9` |
+| Source baseline | Screen 1.2.4, commit `c91d8f9` |
 
 With the change `device_helper list` returned the device with a live lockdown
 session (`product`, `version`, `name`, `language`, `bold_text`), and
@@ -46,7 +46,7 @@ too.
 
 Only macOS 27 was tested. If detection fails elsewhere, or if a previously
 working macOS version regresses after this change, report the macOS version,
-iPhone model and iOS version alongside the AirCard commit tested.
+iPhone model and iOS version alongside the Screen commit tested.
 
 ## Automated checks
 

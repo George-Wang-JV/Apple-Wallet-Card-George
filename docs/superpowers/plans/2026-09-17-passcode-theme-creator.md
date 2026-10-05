@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Implement universal parsing for all `.passthm` archives (fixing missing digits like in MinePass) and create a built-in Passcode Theme Creator with Poster Slicing and Per-Key custom icons in AirCard.
+**Goal:** Implement universal parsing for all `.passthm` archives (fixing missing digits like in MinePass) and create a built-in Passcode Theme Creator with Poster Slicing and Per-Key custom icons in Screen.
 
-**Architecture:** Python backend (`aircard_backend.py`) parses theme archives using a universal digit/subtext extraction matrix ensuring all iOS 18/17/16 locales find matching cache files. In `AirCardApp.swift`, a native macOS SwiftUI Theme Creator provides interactive 3x4 grid slicing and individual key icon assignment with direct flashing and `.passthm` export capabilities.
+**Architecture:** Python backend (`aircard_backend.py`) parses theme archives using a universal digit/subtext extraction matrix ensuring all iOS 18/17/16 locales find matching cache files. In `ScreenApp.swift`, a native macOS SwiftUI Theme Creator provides interactive 3x4 grid slicing and individual key icon assignment with direct flashing and `.passthm` export capabilities.
 
 **Tech Stack:** Python 3, Swift 5.9, SwiftUI, AppKit / CoreGraphics, ZIP packaging, macOS Sequoia / Darwin.
 
@@ -92,9 +92,9 @@ git commit -m "fix(backend): universal passcode theme parsing for all locales an
 ### Task 2: Implement Keypad Slicing & Theme Exporter Engine in Swift
 
 **Files:**
-- Modify: `AirCardApp.swift`
+- Modify: `ScreenApp.swift`
 
-- [ ] **Step 1: Implement `KeypadSlicer` and `PasscodeThemeExporter` in `AirCardApp.swift`**
+- [ ] **Step 1: Implement `KeypadSlicer` and `PasscodeThemeExporter` in `ScreenApp.swift`**
 
 Add utility classes/structs:
 - `KeypadSlicer.slicePoster(image: NSImage, zoom: Double, offset: CGPoint) -> [String: NSImage]`:
@@ -111,23 +111,23 @@ Add utility classes/structs:
 
 Run:
 ```bash
-swiftc -parse AirCardApp.swift
+swiftc -parse ScreenApp.swift
 ```
 Expected: PASS (no syntax or type errors).
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add AirCardApp.swift
+git add ScreenApp.swift
 git commit -m "feat(keypad): add KeypadSlicer and PasscodeThemeExporter engine"
 ```
 
 ---
 
-### Task 3: Build Passcode Theme Creator UI (100% English) in `AirCardApp.swift`
+### Task 3: Build Passcode Theme Creator UI (100% English) in `ScreenApp.swift`
 
 **Files:**
-- Modify: `AirCardApp.swift`
+- Modify: `ScreenApp.swift`
 
 - [ ] **Step 1: Add State Variables and Models to `AppViewModel`**
 
@@ -146,7 +146,7 @@ git commit -m "feat(keypad): add KeypadSlicer and PasscodeThemeExporter engine"
 
 - [ ] **Step 2: Implement Theme Creator View components**
 
-In `AirCardApp.swift`:
+In `ScreenApp.swift`:
 - Top segment: `Picker("", selection: $vm.passcodeTabMode) { ... }` with `[Apply .passthm]` and `[Theme Creator]`.
 - In `themeCreatorView`:
   - Sub-mode picker: `[Poster Slice] | [Individual Keys]`.
@@ -167,12 +167,12 @@ Run:
 ```bash
 ./build.sh
 ```
-Expected: Successful compilation into `build/AirCard.app` and `build/AirCard.dmg`.
+Expected: Successful compilation into `build/Screen.app` and `build/Screen.dmg`.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add AirCardApp.swift
+git add ScreenApp.swift
 git commit -m "feat(ui): implement interactive Passcode Theme Creator in English"
 ```
 
@@ -184,7 +184,7 @@ git commit -m "feat(ui): implement interactive Passcode Theme Creator in English
 - Test with real device and files:
   - `/Users/mak5er/Downloads/MinePass_Nightly.passthm`
   - `/Users/mak5er/Downloads/AyuGram Desktop/тцк.passthm`
-  - Custom generated theme from AirCard Creator
+  - Custom generated theme from Screen Creator
 
 - [ ] **Step 1: Test flashing `MinePass_Nightly.passthm` via backend**
 
@@ -194,11 +194,11 @@ python3 aircard_backend.py flash-passthm 00008120-001A1D0A1EE9A01E "/Users/mak5e
 ```
 Expected: All 10 digits flash successfully (no missing 2-9 keys).
 
-- [ ] **Step 2: Deploy updated app to `/Applications/AirCard.app`**
+- [ ] **Step 2: Deploy updated app to `/Applications/Screen.app`**
 
 Run:
 ```bash
-rm -rf /Applications/AirCard.app && cp -R build/AirCard.app /Applications/AirCard.app && xattr -cr /Applications/AirCard.app
+rm -rf /Applications/Screen.app && cp -R build/Screen.app /Applications/Screen.app && xattr -cr /Applications/Screen.app
 ```
 Expected: App runs smoothly, loads both tabs, switches between Apply .passthm and Theme Creator.
 

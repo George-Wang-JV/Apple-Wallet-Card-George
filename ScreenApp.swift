@@ -509,7 +509,7 @@ class PasscodeThemeExporter {
         language: PasscodeLanguageTarget = .all,
         boldMode: PasscodeBoldTarget = .both
     ) -> URL? {
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("AirCard_Custom_\(UUID().uuidString).passthm")
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Screen_Custom_\(UUID().uuidString).passthm")
         do {
             try exportTheme(keys: keys, targetURL: tempURL, language: language, boldMode: boldMode)
             return tempURL
@@ -526,6 +526,16 @@ class PasscodeThemeExporter {
 class AppViewModel: ObservableObject {
     let skinLibrary: SkinLibrary
     var skinHistoryDeviceID: String? { activeCardDeviceID }
+    var protectedSkinURLs: Set<URL> {
+        var paths = cards.compactMap { $0.customImageURL?.path }
+        for (key, value) in cardDefaults.dictionaryRepresentation() where key.hasPrefix("mak5er.aircard.wallet.v2.") {
+            if let data = value as? Data, let records = try? JSONDecoder().decode([WalletSavedCard].self, from: data) {
+                paths.append(contentsOf: records.compactMap(\.imagePath))
+            }
+        }
+        return Set(paths.map { URL(fileURLWithPath: $0).standardizedFileURL })
+    }
+
     @Published var selectedTab: AppTab = .walletCards
     @Published var loadedPasscodeTheme: PasscodeThemeInfo? = nil
     @Published var isInspectingTheme = false
@@ -637,7 +647,7 @@ class AppViewModel: ObservableObject {
         if let res = Bundle.main.resourceURL {
             candidates.append(res.appendingPathComponent("bin/device_helper").path)
         }
-        candidates.append("/Applications/AirCard.app/Contents/Resources/bin/device_helper")
+        candidates.append("/Applications/Screen.app/Contents/Resources/bin/device_helper")
         for path in candidates {
             if FileManager.default.isExecutableFile(atPath: path) {
                 return URL(fileURLWithPath: path)
@@ -660,10 +670,10 @@ class AppViewModel: ObservableObject {
         if let res = Bundle.main.resourceURL {
             extraPaths.insert(res.appendingPathComponent("bin").path, at: 0)
         }
-        extraPaths.insert("/Applications/AirCard.app/Contents/Resources/bin", at: 0)
+        extraPaths.insert("/Applications/Screen.app/Contents/Resources/bin", at: 0)
         env["PATH"] = (extraPaths + [path]).joined(separator: ":")
         
-        var libPaths = ["/Applications/AirCard.app/Contents/Resources/lib"]
+        var libPaths = ["/Applications/Screen.app/Contents/Resources/lib"]
         if let res = Bundle.main.resourceURL {
             libPaths.insert(res.appendingPathComponent("lib").path, at: 0)
         }
@@ -1079,7 +1089,7 @@ class AppViewModel: ObservableObject {
                             self.device = nil
                             self.refreshWalletCatalog()
                             if resp.error == "device_helper_missing" {
-                                self.scannerMessage = "Device tools are missing. Rebuild or reinstall AirCard, then reconnect."
+                                self.scannerMessage = "Device tools are missing. Rebuild or reinstall Screen, then reconnect."
                                 self.statusText = "Device tools are missing from this build."
                                 self.log("Bundled device_helper not found — detection cannot run.")
                             } else {
@@ -1105,7 +1115,7 @@ class AppViewModel: ObservableObject {
                             self.devices = []
                             self.device = nil
                             if dev.error == "device_helper_missing" {
-                                self.scannerMessage = "Device tools are missing. Rebuild or reinstall AirCard, then reconnect."
+                                self.scannerMessage = "Device tools are missing. Rebuild or reinstall Screen, then reconnect."
                                 self.statusText = "Device tools are missing from this build."
                                 self.log("Bundled device_helper not found — detection cannot run.")
                             } else {
@@ -1133,12 +1143,12 @@ class AppViewModel: ObservableObject {
                         self.isCheckingDevice = false
                         if isLicenseOrCLT {
                             self.statusText = "Command Line Tools required."
-                            self.errorMessage = "AirCard needs Xcode Command Line Tools to communicate with devices.\n\nPlease open Terminal and run:\nxcode-select --install\n\nor open Xcode to accept the license agreement, then restart AirCard."
+                            self.errorMessage = "Screen needs Xcode Command Line Tools to communicate with devices.\n\nPlease open Terminal and run:\nxcode-select --install\n\nor open Xcode to accept the license agreement, then restart Screen."
                             self.scannerMessage = "Developer tools or license agreement required. See log."
                         } else {
                             self.statusText = "Device detection could not run. See the log."
                             self.errorMessage = errRaw.isEmpty
-                                ? "AirCard could not run its device tools. Check the Activity Console log for details."
+                                ? "Screen could not run its device tools. Check the Activity Console log for details."
                                 : "Device tool error: \(errRaw.prefix(300))"
                             self.scannerMessage = "Device check failed. Reconnect and unlock the iPhone, then retry."
                         }
@@ -1207,7 +1217,7 @@ class AppViewModel: ObservableObject {
         guard !isScanningCards, !isFlashing, !isCheckingDevice else { return }
         guard let deviceHelper = AppViewModel.deviceHelperExecutableURL else {
             errorMessage = "Device tools are missing from this build."
-            scannerMessage = "Device tools are missing. Rebuild or reinstall AirCard, then reconnect."
+            scannerMessage = "Device tools are missing. Rebuild or reinstall Screen, then reconnect."
             log("Bundled device_helper not found — cannot scan.")
             return
         }
@@ -1266,14 +1276,14 @@ class AppViewModel: ObservableObject {
                         buffer.removeSubrange(buffer.startIndex..<newlineRange.upperBound)
                         
                         guard let line = String(data: lineData, encoding: .utf8) else { continue }
-                        if line.hasPrefix("AirCard scanner: ") {
+                        if line.hasPrefix("Screen scanner: ") {
                             await MainActor.run {
                                 guard self.scanProcess === proc else { return }
                                 self.log(line)
                                 if line.contains("Connected to the unified") {
                                     self.scannerMessage = "Scanner connected. Open Wallet and tap a card; membership cards may need opening in the Wallet app."
                                 } else {
-                                    self.scannerMessage = String(line.dropFirst("AirCard scanner: ".count))
+                                    self.scannerMessage = String(line.dropFirst("Screen scanner: ".count))
                                 }
                             }
                             continue
@@ -1449,7 +1459,7 @@ class AppViewModel: ObservableObject {
                     let name = imgURL.lastPathComponent
                     await MainActor.run {
                         self.log("Could not prepare artwork from \(name); skipping this card.")
-                        self.errorMessage = "AirCard could not read the image you picked for one of the cards. That card was left unchanged."
+                        self.errorMessage = "Screen could not read the image you picked for one of the cards. That card was left unchanged."
                     }
                     continue
                 }
@@ -2284,7 +2294,8 @@ struct ContentView: View {
         }
         .sheet(item: $skinBrowser) { request in
             SkinLibrarySheet(library: vm.skinLibrary, request: request,
-                             currentURL: vm.cards.first(where: { $0.id == request.cardID })?.customImageURL) { skin in
+                             currentURL: vm.cards.first(where: { $0.id == request.cardID })?.customImageURL,
+                             protectedURLs: vm.protectedSkinURLs) { skin in
                 guard let cardID = request.cardID, vm.skinHistoryDeviceID == request.deviceID,
                       !vm.isFlashing else { return false }
                 return vm.setCardImage(for: cardID, url: vm.skinLibrary.url(for: skin))
@@ -2307,13 +2318,14 @@ struct ContentView: View {
     
     private var headerView: some View {
         HStack(spacing: 12) {
-            Image(systemName: "creditcard.circle.fill")
-                .font(.system(size: 30))
-                .foregroundColor(.accentColor)
+            Image(nsImage: NSImage(named: NSImage.Name("AppIcon")) ?? NSImage(systemSymbolName: "creditcard.fill", accessibilityDescription: "Screen")!)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 36, height: 36)
             
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("AirCard")
+                    Text("Screen")
                         .font(.title2)
                         .fontWeight(.bold)
                     Text("v1.2.6")
@@ -3984,7 +3996,7 @@ struct ContentView: View {
 
 #if !WALLET_TESTS
 @main
-struct AirCardApp: App {
+struct ScreenApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -20,7 +20,7 @@ reader exits unexpectedly.
 | --- | --- |
 | iPhone | iPhone 15 Pro (`iPhone16,1`), iOS 18.6.2 |
 | Mac | MacBook Air (M3, 2024), macOS 26.6.2 |
-| Source baseline | AirCard 1.2.3, commit `02b5ba8` |
+| Source baseline | Screen 1.2.3, commit `02b5ba8` |
 
 The original report included a macOS 26.2 screenshot; the Mac used for this
 validation reported macOS 26.6.2. Do not treat macOS 26.2 as verified.
@@ -49,6 +49,6 @@ macOS and Xcode command-line tools.
 ## Help verify other devices
 
 If your device connects but no cards appear, try this branch's build and report
-your iPhone model, iOS version, macOS version, the exact AirCard commit tested,
+your iPhone model, iOS version, macOS version, the exact Screen commit tested,
 and whether cards appeared after selecting them in Wallet. Include any scanner
 error message, but do not include raw device logs or full card identifiers.

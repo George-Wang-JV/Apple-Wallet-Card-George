@@ -73,11 +73,11 @@ static void TestFrames(void) {
         MemoryStream stream = {wire.bytes, wire.length, 0, chunk.unsignedIntegerValue};
         NSString *error = nil;
         uint8_t type = 0;
-        NSData *reply = AirCardTraceReadFrame(Receive, &stream, &type, &error);
+        NSData *reply = ScreenTraceReadFrame(Receive, &stream, &type, &error);
         assert(type == 1 && [reply isEqual:ack] && !error);
-        NSData *event = AirCardTraceReadFrame(Receive, &stream, &type, &error);
+        NSData *event = ScreenTraceReadFrame(Receive, &stream, &type, &error);
         assert(type == 2 && [event isEqual:record] && !error);
-        assert(AirCardTraceReadFrame(Receive, &stream, &type, &error) == nil);
+        assert(ScreenTraceReadFrame(Receive, &stream, &type, &error) == nil);
         assert(error != nil);
     }
 }
@@ -96,36 +96,36 @@ static void TestInvalidFrames(void) {
         MemoryStream stream = {wire.bytes, wire.length, 0, 2};
         NSString *error = nil;
         uint8_t type = 0;
-        assert(AirCardTraceReadFrame(Receive, &stream, &type, &error) == nil);
+        assert(ScreenTraceReadFrame(Receive, &stream, &type, &error) == nil);
         assert(error != nil);
     }
 }
 
 static void TestRecords(void) {
     NSData *record = LogRecord();
-    NSString *line = AirCardTraceLogLine(record);
+    NSString *line = ScreenTraceLogLine(record);
     assert([line hasPrefix:@"passd(CoreFoundation): Resource lookup "]);
     assert([line containsString:@"/Cards/AAAAAAAAAAAAAAAAAAAAAAAAAAA=.pkpass/"]);
     assert([line hasSuffix:@"actions.strings\n"]);
     assert([line rangeOfString:@"Resource lookup\n"].location == NSNotFound);
     assert([line rangeOfString:@"\0"].location == NSNotFound);
-    assert(AirCardTraceLogLine([record subdataWithRange:NSMakeRange(0, 128)]) == nil);
-    assert(AirCardTraceLogLine([record subdataWithRange:NSMakeRange(0, record.length - 1)]) == nil);
+    assert(ScreenTraceLogLine([record subdataWithRange:NSMakeRange(0, 128)]) == nil);
+    assert(ScreenTraceLogLine([record subdataWithRange:NSMakeRange(0, record.length - 1)]) == nil);
 
     for (NSNumber *offset in @[@5, @109]) {
         NSMutableData *corrupt = [record mutableCopy];
         WriteUInt32(corrupt, offset.unsignedIntegerValue, UINT32_MAX);
-        assert(AirCardTraceLogLine(corrupt) == nil);
+        assert(ScreenTraceLogLine(corrupt) == nil);
     }
     NSMutableData *corrupt = [record mutableCopy];
     ((uint8_t *)corrupt.mutableBytes)[0] = 1;
-    assert(AirCardTraceLogLine(corrupt) == nil);
+    assert(ScreenTraceLogLine(corrupt) == nil);
 }
 
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc == 2 && strcmp(argv[1], "--fixture") == 0) {
-            fputs(AirCardTraceLogLine(LogRecord()).UTF8String, stdout);
+            fputs(ScreenTraceLogLine(LogRecord()).UTF8String, stdout);
             return 0;
         }
         TestFrames();

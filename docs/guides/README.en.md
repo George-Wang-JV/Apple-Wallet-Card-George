@@ -1,14 +1,14 @@
-# AirCard User Guide 🎴
+# Screen User Guide 🎴
 
 **Give your Apple Wallet cards a look you like.**
 
-[中文](README.zh-CN.md) · English · [Download AirCard](https://github.com/Mak5er/AirCard/releases/latest) · [Card artwork](#card-artwork)
+[中文](README.zh-CN.md) · English · [Download Screen](https://github.com/Mak5er/AirCard/releases/latest) · [Card artwork](#card-artwork)
 
-A **Chinese and English getting-started guide with sample artwork**, put together by [BryceYuuu](https://github.com/BryceYuuu) to help first-time users install AirCard and customize Wallet cards. AirCard is developed by [Mak5er](https://github.com/Mak5er/AirCard) and its contributors.
+A **Chinese and English getting-started guide with sample artwork**, put together by [BryceYuuu](https://github.com/BryceYuuu) to help first-time users install Screen and customize Wallet cards. Screen is developed by [Mak5er](https://github.com/Mak5er/AirCard) and its contributors.
 
-## What does AirCard do?
+## What does Screen do?
 
-AirCard is a macOS tool that connects to an iPhone over USB to customize Apple Wallet / Apple Pay card artwork. It also supports lock screen passcode themes (`.passthm`) and theme creation. This guide focuses on **changing Wallet card artwork**.
+Screen is a macOS tool that connects to an iPhone over USB to customize Apple Wallet / Apple Pay card artwork. It also supports lock screen passcode themes (`.passthm`) and theme creation. This guide focuses on **changing Wallet card artwork**.
 
 Artwork changes are visual: an image does not create a bank card or change its payment permissions.
 
@@ -36,15 +36,15 @@ Original card artwork for this guide. Use the links below to download them. If G
 | Phone | An iPhone; upstream advertises iOS 18+ without a jailbreak, but results depend on the device and OS version |
 | Connection | A USB data cable; keep the iPhone unlocked and trust the Mac |
 | Card | A card already added to Apple Wallet |
-| App | Download `AirCard.dmg` from the [original releases page](https://github.com/Mak5er/AirCard/releases/latest); the DMG needs no separate Homebrew or Python installation |
+| App | Download `Screen.dmg` from the [original releases page](https://github.com/Mak5er/AirCard/releases/latest); the DMG needs no separate Homebrew or Python installation |
 
-This guide was checked against **AirCard v1.2.6** on **2026-10-04**. The upstream README reports testing on iOS 27; that is not a guarantee for every device. No additional hardware compatibility testing was performed for this guide.
+This guide was checked against **Screen v1.2.6** on **2026-10-04**. The upstream README reports testing on iOS 27; that is not a guarantee for every device. No additional hardware compatibility testing was performed for this guide.
 
 ## Change your card artwork in five steps
 
-### 1. Install AirCard
+### 1. Install Screen
 
-Open the [official download page](https://github.com/Mak5er/AirCard/releases/latest) and download `AirCard.dmg` under **Assets**. Open it, drag `AirCard.app` into **Applications**, and launch the app.
+Open the [official download page](https://github.com/Mak5er/AirCard/releases/latest) and download `Screen.dmg` under **Assets**. Open it, drag `Screen.app` into **Applications**, and launch the app.
 
 If macOS blocks the first launch, verify that the file came from the original repository above, then follow the [upstream installation instructions](https://github.com/Mak5er/AirCard/blob/main/README.md#installation).
 
@@ -54,17 +54,17 @@ Connect the iPhone to the Mac with a USB data cable. Unlock it, choose **Trust T
 
 ### 3. Scan your existing cards
 
-In AirCard, open **Apple Wallet** and click **Scan Cards**. On the iPhone:
+In Screen, open **Apple Wallet** and click **Scan Cards**. On the iPhone:
 
 1. Double-click the side button to open Apple Pay.
 2. Authenticate as prompted, for example with Face ID.
 3. Tap the card you want to customize. If necessary, tap again or switch to another card and back.
 
-Wait for the card to appear in AirCard on the Mac.
+Wait for the card to appear in Screen on the Mac.
 
 ### 4. Choose an image
 
-Download any PNG above. Click the target card in AirCard to select an image, or drag the image directly onto it. Check the preview and make sure you selected the intended card. You can assign a different image to each card.
+Download any PNG above. Click the target card in Screen to select an image, or drag the image directly onto it. Check the preview and make sure you selected the intended card. You can assign a different image to each card.
 
 ### 5. Apply and refresh
 
@@ -90,7 +90,7 @@ Open **Log** and look for `Connected to the unified device log stream`. The scan
 
 ### Why is my image cropped?
 
-AirCard center-crops to a landscape card shape. Prepare artwork at **1536 × 969**, or the same aspect ratio, and keep important text and graphics near the center. The sample images retain their original dimensions so you can adjust the composition yourself.
+Screen center-crops to a landscape card shape. Prepare artwork at **1536 × 969**, or the same aspect ratio, and keep important text and graphics near the center. The sample images retain their original dimensions so you can adjust the composition yourself.
 
 ### Can I restore the original card artwork with one click?
 
@@ -106,9 +106,9 @@ Open **Passcode (.passthm)**, import a `.passthm` file, review the preview, and 
 
 ## Updates, feedback, and credits
 
-- **Downloads and updates:** [Mak5er/AirCard Releases](https://github.com/Mak5er/AirCard/releases). App installers are published by the original project.
-- **Application issues:** check [upstream Issues](https://github.com/Mak5er/AirCard/issues). Include your iPhone model, iOS, macOS, AirCard version, and a short error message. Do not post full device logs or card identifiers.
-- **Guide and artwork curation:** [BryceYuuu](https://github.com/BryceYuuu); the standalone guide repository is [AirCard-Guide](https://github.com/BryceYuuu/AirCard-Guide).
+- **Downloads and updates:** [Mak5er/Screen Releases](https://github.com/Mak5er/AirCard/releases). App installers are published by the original project.
+- **Application issues:** check [upstream Issues](https://github.com/Mak5er/AirCard/issues). Include your iPhone model, iOS, macOS, Screen version, and a short error message. Do not post full device logs or card identifiers.
+- **Guide and artwork curation:** [BryceYuuu](https://github.com/BryceYuuu); the standalone guide repository is [Screen-Guide](https://github.com/BryceYuuu/AirCard-Guide).
 - **Original development:** [Mak5er](https://github.com/Mak5er), [Lumid-Off](https://github.com/Lumid-Off), and [0xjohnny](https://github.com/0xjohnnydev), author of the underlying [AirLift](https://github.com/0xjohnnydev/airlift). You can star the [original project](https://github.com/Mak5er/AirCard) or use the [author's support links](https://github.com/Mak5er/AirCard/blob/main/README.md#support) to support development.
 
 Upstream code is covered by the [MIT License](../../LICENSE), with its copyright notice preserved. The added artwork was supplied by [BryceYuuu](https://github.com/BryceYuuu) and is not automatically covered by the code's MIT license; see the [artwork notes](../../assets/skins/README.md). This guide and its sample artwork are not official Apple or bank products.

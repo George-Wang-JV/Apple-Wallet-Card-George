@@ -5,14 +5,14 @@ import AppKit
 struct WalletViewModelTests {
     @MainActor
     static func main() throws {
-        let suite = "AirCardWalletTests." + UUID().uuidString
+        let suite = "ScreenWalletTests." + UUID().uuidString
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
         let a = String(repeating: "A", count: 27) + "="
         let b = String(repeating: "B", count: 27) + "="
         let c = String(repeating: "C", count: 27) + "="
         defaults.set([b, a, b], forKey: "mak5er.aircard.savedCards")
-        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("AirCardSkinTests-" + UUID().uuidString)
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("ScreenSkinTests-" + UUID().uuidString)
         try FileManager.default.createDirectory(at: temp, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: temp) }
         let library = SkinLibrary(directory: temp.appendingPathComponent("library"))
@@ -110,6 +110,43 @@ struct WalletViewModelTests {
         precondition(!relaunched.setCardImage(for: b, url: sourceB))
         relaunched.isFlashing = false
         precondition(!relaunched.setCardImage(for: "deleted-card", url: sourceB))
+        // Deletion removes every history reference, protects assigned skins,
+        // survives relaunch and rolls the index back when Trash is unavailable.
+        let deletionRoot = temp.appendingPathComponent("delete-library")
+        let deletionLibrary = SkinLibrary(directory: deletionRoot, trashFile: { url in
+            try FileManager.default.moveItem(at: url, to: temp.appendingPathComponent("trashed-" + url.lastPathComponent))
+        })
+        let deletable = try deletionLibrary.importImage(sourceB)
+        try deletionLibrary.record(deletable, deviceID: "one", cardID: "card")
+        try deletionLibrary.record(deletable, deviceID: "two", cardID: "card")
+        do {
+            try deletionLibrary.remove(deletable, protectedURLs: [deletionLibrary.url(for: deletable)])
+            preconditionFailure("In-use skins must not be deleted")
+        } catch { }
+        precondition(deletionLibrary.skins.count == 1)
+        precondition(FileManager.default.fileExists(atPath: deletionLibrary.url(for: deletable).path))
+        try deletionLibrary.remove(deletable, protectedURLs: [])
+        precondition(deletionLibrary.skins.isEmpty)
+        precondition(deletionLibrary.history(deviceID: "one", cardID: "card").isEmpty)
+        precondition(deletionLibrary.history(deviceID: "two", cardID: "card").isEmpty)
+        precondition(!FileManager.default.fileExists(atPath: deletionLibrary.url(for: deletable).path))
+        precondition(SkinLibrary(directory: deletionRoot).skins.isEmpty)
+        let failingLibrary = SkinLibrary(directory: deletionRoot, trashFile: { _ in
+            throw NSError(domain: "TestTrash", code: 1)
+        })
+        let kept = try failingLibrary.importImage(sourceB)
+        do {
+            try failingLibrary.remove(kept, protectedURLs: [])
+            preconditionFailure("Trash failure should be reported")
+        } catch { }
+        precondition(failingLibrary.skins.count == 1)
+        precondition(SkinLibrary(directory: deletionRoot).skins.count == 1)
+        precondition(FileManager.default.fileExists(atPath: failingLibrary.url(for: kept).path))
+        precondition(relaunched.setCardImage(for: b, url: sourceB))
+        let assignedURL = relaunched.cards.first { $0.id == b }!.customImageURL!
+        relaunched.activateCardDevice("another-phone")
+        precondition(relaunched.protectedSkinURLs.contains(assignedURL))
+        print("Skin deletion, in-use protection across devices, persistence and Trash failure rollback passed")
         // Corrupt indexes must not silently discard an existing library.
         let index = library.directory.appendingPathComponent("index.json")
         let broken = Data("broken index".utf8)

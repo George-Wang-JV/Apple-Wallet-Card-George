@@ -4,7 +4,7 @@
 
 ## 中文
 
-将自己的图片裁切并导出为 **1536 × 969 PNG**，再交给 AirCard 预览和应用。工具是单个 [`index.html`](index.html) 文件，内置全部 CSS 和 JavaScript；无需安装依赖、启动服务器或联网。图片只在浏览器的本地 Canvas 中处理，没有上传、遥测或操作历史存储。
+将自己的图片裁切并导出为 **1536 × 969 PNG**，再交给 Screen 预览和应用。工具是单个 [`index.html`](index.html) 文件，内置全部 CSS 和 JavaScript；无需安装依赖、启动服务器或联网。图片只在浏览器的本地 Canvas 中处理，没有上传、遥测或操作历史存储。
 
 ### 下载与使用
 
@@ -14,13 +14,13 @@
 4. 初始构图按比例填满目标画面，并从中心裁切。拖动预览、调整缩放，或用「水平取景／垂直取景」滑杆定位。所有滑杆均可通过键盘 Tab 聚焦和方向键调整；聚焦预览后也可以使用方向键，按住 Shift 可以扩大移动幅度。某个方向没有可裁切余量时，其滑杆不可用。
 5. 按需选择「保留透明通道」「填充白色背景」或「填充黑色背景」。默认保留原图透明度；棋盘格仅用于预览，**不会导出到图片**。
 6. 点击「下载卡面 PNG」。导出尺寸始终为 **1536 × 969 像素**，不会因页面大小或屏幕像素密度变化。文件名为 `原文件名-aircard-1536x969.png`；文件名过长时会截短，并替换不适合作为文件名的字符。
-7. 将导出的 PNG 导入 AirCard，检查预览，再按指南应用到选中的卡片。浏览器关闭或刷新后，未导出的构图会丢失。
+7. 将导出的 PNG 导入 Screen，检查预览，再按指南应用到选中的卡片。浏览器关闭或刷新后，未导出的构图会丢失。
 
 右上角可切换中文和英文；语言切换不会重置当前构图。「重置缩放与居中构图」恢复最初的裁切位置和缩放，保留已选背景处理方式。
 
 ### 构图与显示边界
 
-- **与 AirCard 的关系：** 初始裁切几何对应 [`AirCardApp.swift`](../../AirCardApp.swift) 中 `AppViewModel.prepareCardImage` 的 `max(1536 / width, 969 / height)` 比例和居中位置。本工具允许在导出前手动改变构图；它不安装 AirCard、不连接手机，也不直接替换 Wallet 文件。
+- **与 Screen 的关系：** 初始裁切几何对应 [`ScreenApp.swift`](../../ScreenApp.swift) 中 `AppViewModel.prepareCardImage` 的 `max(1536 / width, 969 / height)` 比例和居中位置。本工具允许在导出前手动改变构图；它不安装 Screen、不连接手机，也不直接替换 Wallet 文件。
 - **像素与清晰度：** 当原图裁切区域小于输出所需像素时，页面显示放大提示。固定尺寸输出不能补回丢失的细节；增加缩放会进一步降低可用分辨率。
 - **透明区域：** 默认导出保留 alpha 通道。Wallet 如何显示透明区域取决于实际卡片及系统；如需要确定的底色，请选择白色或黑色。不会自动移除已有实色背景。
 - **预览范围：** 预览显示 PNG 的完整矩形范围，不模拟 Wallet 圆角、卡组织标志、文字叠加或实机缩放。让重要图案和文字远离边缘，并以实机效果为准。
@@ -41,7 +41,7 @@ node --test tools/card-artwork/tests/crop.test.cjs
 
 ## English
 
-Crop your own image and export a **1536 × 969 PNG**, then preview and apply it in AirCard. The entire tool is one [`index.html`](index.html) file with embedded CSS and JavaScript. No dependencies, server, or internet connection are required. Images are processed in a local browser canvas, with no uploads, telemetry, or saved editing history.
+Crop your own image and export a **1536 × 969 PNG**, then preview and apply it in Screen. The entire tool is one [`index.html`](index.html) file with embedded CSS and JavaScript. No dependencies, server, or internet connection are required. Images are processed in a local browser canvas, with no uploads, telemetry, or saved editing history.
 
 ### Download and use
 
@@ -51,13 +51,13 @@ Crop your own image and export a **1536 × 969 PNG**, then preview and apply it 
 4. The initial view scales the image to fill the target and crops it at the center. Drag the preview, adjust zoom, or use the horizontal and vertical crop-position sliders. Tab and arrow keys operate the sliders. Arrow keys also move the crop when the preview is focused; hold Shift for larger steps. A slider is disabled if the entire corresponding dimension is already visible.
 5. Choose whether to keep transparency or fill transparent areas with white or black. Source alpha is preserved by default. The checkerboard is a preview aid and **is never exported**.
 6. Click **Download artwork PNG**. The output is always **1536 × 969 pixels**, independent of the page size or screen pixel density. The filename is `original-name-aircard-1536x969.png`; long names are shortened and unsuitable filename characters are replaced.
-7. Import the PNG into AirCard, check its preview, and follow the guide to apply it to the selected cards. Export before closing or refreshing this page to keep your work.
+7. Import the PNG into Screen, check its preview, and follow the guide to apply it to the selected cards. Export before closing or refreshing this page to keep your work.
 
 The top-right button switches between Chinese and English without changing the composition. **Reset zoom & center crop** restores the initial scale and position while preserving the selected transparency/background setting.
 
 ### Composition and display limitations
 
-- **Relationship to AirCard:** the initial crop geometry matches `AppViewModel.prepareCardImage` in [`AirCardApp.swift`](../../AirCardApp.swift): scale by `max(1536 / width, 969 / height)` and center the result. This utility lets you reframe before exporting. It does not install AirCard, connect to a phone, or replace Wallet files.
+- **Relationship to Screen:** the initial crop geometry matches `AppViewModel.prepareCardImage` in [`ScreenApp.swift`](../../ScreenApp.swift): scale by `max(1536 / width, 969 / height)` and center the result. This utility lets you reframe before exporting. It does not install Screen, connect to a phone, or replace Wallet files.
 - **Resolution:** an enlargement notice appears when the crop contains fewer pixels than the output needs. Exporting at a fixed size cannot recover missing detail; zooming further reduces available source resolution.
 - **Transparency:** alpha is preserved by default. Wallet's handling of transparency depends on the card and system. Choose white or black for a defined background. Existing opaque backgrounds are not removed.
 - **Preview coverage:** the preview shows the full rectangular PNG, without simulating Wallet's rounded corners, network logos, text overlays, or device scaling. Keep important elements away from the edges and check the actual phone result.

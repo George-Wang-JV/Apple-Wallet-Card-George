@@ -6,7 +6,7 @@
 // USB device on macOS 27, which is what this test locks out.
 static void TestRequestsUsbMuxOnly(void) {
     for (NSNumber *direct in @[@NO, @YES]) {
-        NSDictionary *options = AirCardDeviceNotificationOptions(direct.boolValue);
+        NSDictionary *options = ScreenDeviceNotificationOptions(direct.boolValue);
         assert([options[@"NotificationOptionSearchForPairedDevices"] boolValue]);
         assert([options[@"NotificationOptionEnableUSBMux"] boolValue]);
         assert([options[@"NotificationOptionSearchForWiFiPairableDevices"] isEqual:@NO]);

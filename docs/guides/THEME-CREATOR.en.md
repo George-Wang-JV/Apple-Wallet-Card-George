@@ -85,7 +85,7 @@ Use the [feedback template](compatibility-report-template.md) to report results.
 
 ## Source references
 
-- [AirCardApp.swift](../../AirCardApp.swift): `KeypadSlicer`, `PasscodeThemeExporter`, `applyDevicePreferences`, `inspectPasscodeTheme`, `editLoadedThemeInCreator`, `openSavePasscodeThemePanel`, and the creator UI.
+- [ScreenApp.swift](../../ScreenApp.swift): `KeypadSlicer`, `PasscodeThemeExporter`, `applyDevicePreferences`, `inspectPasscodeTheme`, `editLoadedThemeInCreator`, `openSavePasscodeThemePanel`, and the creator UI.
 - [aircard_backend.py](../../aircard_backend.py): archive parsing, previews, and target handling in `parse_passthm_archive`, `cmd_inspect_passthm`, and `cmd_flash_passthm`.
 - [Sources/device_helper.m](../../Sources/device_helper.m): reads `Language` and `EnhancedTextLegibility`.
 - [Upstream README](https://github.com/Mak5er/AirCard/blob/main/README.md#how-to-apply-lockscreen-passcode-themes-passthm): device refresh steps.
