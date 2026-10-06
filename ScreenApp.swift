@@ -3795,7 +3795,7 @@ struct ContentView: View {
             }
             HStack {
                 Spacer()
-                Text("George & Luna")
+                Text("Created by George & Luna with ❤️  ·  Version \(AppInfo.versionString) (\(AppInfo.buildNumber))")
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }
